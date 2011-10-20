@@ -1,0 +1,15 @@
+{
+  "author": "Elijah Insua <tmpvar@gmail.com> (http://tmpvar.com)",
+  "name": "entity",
+  "description": "metaobject with a dashes of CLOS and FRP",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tmpvar/entity.js.git"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
