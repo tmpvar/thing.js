@@ -4,8 +4,21 @@ ok = function(a, msg) {
     throw new Error(msg);
   }
 },
+equal = function(a, b, msg) {
+  if (a !== b) {
+    throw new Error('"' + a + '" !== "' + b + '"\n Expected: ' + msg);
+  }
+},
+less = function(a, b, msg) {
+  if (a >= b) {
+    throw new Error(msg + ' (' + a + ' is not less than ' + b + ')');
+  }
+},
+fail = function(msg) {
+  throw new Error(msg);
+},
 Entity = (typeof Entity === 'undefined') ?
-          require('../')            :
+          require('../').Entity            :
           Entity,
 
 specs = [
@@ -30,6 +43,61 @@ specs = [
     )
   },
 
+  function ensure_setter_argument_config_object(e, f) {
+    e.notify = function() {
+      fail('notify should not be called when silent:true');
+    };
+
+    e.set({
+      values : {
+        key : 'value'
+      },
+      silent : true,
+      source : 'abc123',
+      done : function() {
+        ok(e.get('key') === 'value', 'should set as expected');
+        ok(e.get('key', 'source') === 'abc123', 'the source of this key should be stored in the metadata');
+        f();
+      }
+    });
+
+    return false;
+  },
+
+  function ensure_setter_accepts_multiple_values(e) {
+    e.set({ abc : '1', def : 2});
+    equal(e.get('abc'), '1', 'key:abc === value:1');
+    equal(e.get('def'), 2, 'key:def === value:2');
+  },
+
+  function ensure_setter_calls_back(e, f) {
+    e.set('abc', 123, function() {
+      equal(e.get('abc'), 123, 'key:abc === value:123');
+      f();
+    });
+    return false;
+  },
+
+  function ensure_setter_key_value_options_callback_are_mixedin_properly(e, f) {
+    e.notify = function() {
+      fail('notify should not be called when silent:true');
+    };
+
+    var context = {
+      test : 1
+    };
+
+    e.set('key', 'value', {
+      silent : true,
+      source : context,
+    }, function() {
+      equal(e.get('key', 'source'), context, 'keep a record of where the value came from');
+      equal(e.get('key'), 'value', 'ensure the correct value is stored');
+      f();
+    });
+    return false;
+  },
+
   function ensure_getter_returns_null_for_undefined(e) {
     ok(e.get('noop') === null, 'undefined keys are returned as null');
   },
@@ -39,8 +107,8 @@ specs = [
 
     setTimeout(function() {
       e.set('a', 1234);
-      ok(
-        e.get('a', 'created') < e.get('a', 'modified'),
+      less(
+        e.get('a', 'created'), e.get('a', 'modified'),
         'expect a modified date to change on update'
       );
       f();
@@ -67,7 +135,7 @@ specs = [
     e.set('b', 'test');
 
     var eAddress = e.address();
-    e.point(a.address());
+    e.mount(a.address());
 
     ok(e.get('a') === a.get('a'), 'e is pointing at a');
     ok(e.get('b') === null, 'e.b is not defined');
@@ -98,27 +166,43 @@ specs = [
     ok(called, 'notify should have been called');
   }
 
-
 ],
-failed = 0, passed = 0;
+failed = 0, passed = 0, keys = Object.keys(specs), i = 0, l = keys.length;
 
-specs.forEach(function(test) {
-  var name = test.name.replace(/_/g, ' ');
+function next() {
+  if (i>=l) { return; }
 
+  var test = specs[keys[i]], name = test.name.replace(/_/g, ' '), timeout = null, called = false;
+  process.stdout.write(name + ' ... ');
   var done = function(e) {
-    if (e) {
-      console.log('FAIL:', name, '(' + e.message + ')', e.stack);
+    clearTimeout(timeout);
+    if (!called) {
+      called = true;
     } else {
-      console.log('PASS:', name);
+      e = new Error('USER ERROR: done called multiple times in ' + test.name);
     }
+
+    if (e) {
+      console.log('FAIL\n\n', e.message, '\n');
+    } else {
+      console.log('PASS');
+    }
+    i++;
+    process.nextTick(next);
   };
 
   try {
     var entity = new Entity();
     if (test(entity, done) !== false) {
       done();
+    } else {
+      timeout = setTimeout(function() {
+        done(new Error(test.name + ' timed out'));
+      }, 500);
     }
   } catch (e) {
     done(e);
   }
-});
+};
+
+next();
