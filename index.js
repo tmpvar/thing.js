@@ -1,3 +1,27 @@
+// TODO:
+//  Async synchronization
+//  Set a property equal to an entity and special case getter/setter access
+//  Keep a record of where data came from
+
+// Getter stuff
+//  object.get('key')
+//  object.get(['a','b','c','d']).toJSON([shallow=false])
+//  object.toJSON() // returns an object suitable for JSON.stringify
+
+// Setter stuff
+//  object.set('key', 'value')
+//  object.set({ key : 'value' })
+//  object.set({ key : 'value'}, function() { })
+//  object.set('key', 'value', { silent : true, source : this }, function() {});
+//  object.set({
+//    values : {
+//      key : 'value'
+//    },
+//    silent : true,
+//    source : this,
+//    done : function() {}
+//  });
+
 ;(function(ns) {
   var
   uid = 0,
@@ -118,7 +142,7 @@
     address : function() {
       return {
         uid : this._uid
-      }
+      };
     },
     mount : function(address) {
       this._uid = address.uid;

@@ -107,8 +107,9 @@ specs = [
 
     setTimeout(function() {
       e.set('a', 1234);
-      less(
-        e.get('a', 'created'), e.get('a', 'modified'),
+
+      ok(
+        e.get('a', 'created') < e.get('a', 'modified'),
         'expect a modified date to change on update'
       );
       f();
@@ -165,7 +166,6 @@ specs = [
     e.set('a', 12);
     ok(called, 'notify should have been called');
   }
-
 ],
 failed = 0, passed = 0, keys = Object.keys(specs), i = 0, l = keys.length;
 
@@ -189,6 +189,7 @@ function next() {
     }
     i++;
     process.nextTick(next);
+
   };
 
   try {
