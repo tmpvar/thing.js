@@ -22,6 +22,9 @@
   isString = function(a) {
     return toString.call(a) == '[object String]';
   },
+  isArray = function(a) {
+    return toString.call(a) == '[object Array]';
+  },
 
   compactArray = function(array) {
     var v, ret = [];
@@ -193,18 +196,27 @@
 
     get : function(key, metakey) {
       var
-      slot = store[this._uid].values[key],
-      ret = null;
+      slot,
+      values = store[this._uid].values,
+      ret = [];
 
-      if (slot) {
-        if (metakey) {
-          ret = slot.meta[metakey];
+      if (!isArray(key)) {
+        key = [key];
+      }
 
-        } else if (slot.get && typeof slot.get === 'function') {
-          ret = slot.get();
+      for(var i=0, l=key.length; i<l; i++) {
+        slot = values[key[i]];
 
-        } else {
-          ret = slot.value;
+        if (slot) {
+          if (metakey) {
+            ret.push(slot.meta[metakey]);
+
+          } else if (slot.get && typeof slot.get === 'function') {
+            ret.push(slot.get());
+
+          } else {
+            ret.push(slot.value);
+          }
         }
       }
 
@@ -215,7 +227,7 @@
         });
       }
 
-      return ret;
+      return (ret.length > 1) ? ret : ret[0] || null;
     },
     address : function() {
       return {

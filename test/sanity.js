@@ -178,6 +178,10 @@ specs = [
       e.get(['a','c']).join(','), '1,3',
     'should support collection of multiple properties'
     )
+
+    var times = e.get(['a','b', 'c'], 'created');
+    ok(times[0] === times[1] && times[0] === times[2], 'all keys created at the same time');
+    ok(times[0] > 0, 'should be numbers by default');
   }
 ],
 failed = 0, passed = 0, keys = Object.keys(specs), i = 0, l = keys.length;
