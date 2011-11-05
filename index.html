@@ -4,15 +4,39 @@
   <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
+  <h1>Entity sandbox</h1>
   <p>Protip: use the console</p>
+
+  <h2>Basic get/set</h2>
   <p>
-    example codes:
     <pre>
 var e = new Entity();
 e.set({ test : 123 });
-console.log(e.get('none'));
-console.log(e.get('test'));
+console.log('none:', e.get('none'));
+console.log('test:', e.get('test'));
     </pre>
   </p>
+
+  <h2>Get multiple values</h2>
+  <p>
+    <pre>
+var e = new Entity();
+e.set({ test : 123, hello: 'world' });
+setTimeout(function() {
+  e.set('test', 1234);
+
+  // get multiple values
+  console.log('values:', e.get(['test', 'hello']));
+
+  // or metadata
+  var ages = e.get(['test', 'hello'], 'modified');
+  console.log('ages:', ages);
+  console.log('age difference:', (ages[0] - ages[1]) + 'ms');
+
+}, 100);
+    </pre>
+  </p>
+
+
 </body>
 </html>
