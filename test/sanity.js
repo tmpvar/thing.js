@@ -183,7 +183,7 @@ function next() {
     }
 
     if (e) {
-      console.log('FAIL\n\n', e.message, '\n');
+      console.log('FAIL\n\n', e.stack, '\n');
     } else {
       console.log('PASS');
     }
