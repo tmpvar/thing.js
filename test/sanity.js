@@ -165,6 +165,19 @@ specs = [
 
     e.set('a', 12);
     ok(called, 'notify should have been called');
+  },
+
+  function ensure_get_supports_an_array_of_keys(e) {
+    e.set({
+      a : 1,
+      b : 2,
+      c : 3
+    });
+
+    equal(
+      e.get(['a','c']).join(','), '1,3',
+    'should support collection of multiple properties'
+    )
   }
 ],
 failed = 0, passed = 0, keys = Object.keys(specs), i = 0, l = keys.length;
