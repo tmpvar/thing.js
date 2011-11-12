@@ -256,6 +256,24 @@ specs = [
 
     var e2 = new Entity({ traits : ['hello'] });
     equal(e2.hello(), 'world', 'traits append properties to the prototype')
+  },
+
+  function ensure_attributes_can_be_calculated() {
+    Entity.trait('calculated-attributes', {
+      attribute : {
+        get : function() {
+          return 'hello there: ' + Entity.prototype.get.apply(this, attributes);
+        },
+        value : ''
+      }
+    });
+
+    var e = Entity.create({ traits : ['calculated-attributes']});
+    e.set('attribute', 'monkey');
+
+    equal(e.get('attribute'), 'hello there: monkey',
+      'since attribute has a set method that should be used instead of value directly'
+    );
 
   }
 ],
