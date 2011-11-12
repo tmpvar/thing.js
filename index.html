@@ -37,6 +37,19 @@ setTimeout(function() {
     </pre>
   </p>
 
+  <h2>Traits</h2>
+  <p>
+    <pre>
+Entity.trait('test', {
+  hello : function() {
+    return 'world';
+  }
+});
+
+var e = Entity.create({ traits : ['test'] });
+e.hello(); // outputs 'world'
+    </pre>
+  </p>
 
 </body>
 </html>

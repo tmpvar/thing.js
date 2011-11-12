@@ -164,7 +164,7 @@
           this.notify('set', {
             key : key,
             old : old,
-            val : value
+            val : incomingValue
           });
         }
       }

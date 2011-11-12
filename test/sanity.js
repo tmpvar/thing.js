@@ -161,6 +161,25 @@ specs = [
     ok(called, 'notify should have been called');
   },
 
+  function ensure_subscribers_do_not_get_stale_data_on_subsequent_sets(e) {
+    e.notify = function(op, event) {
+      equal(op, 'set', 'set expected');
+      equal(typeof event.old, 'undefined', 'on first set, old should be undefined');
+      equal(event.val, 1);
+    };
+
+    e.set({ a : 1 });
+
+    e.notify = function(op, event) {
+      equal(op, 'set', 'set expected');
+      equal(typeof event.old, 'number', 'on first set, old should be undefined');
+      equal(event.old, 1, 'on subsequent sets old should contain the previous value');
+      equal(event.val, 2, 'on sets the event.val should be the current value');
+    };
+
+    e.set({ a : 2 });
+  },
+
   function ensure_subscribers_are_notified_when_prop_updated(e) {
     e.set('a', 123);
     var called = false
