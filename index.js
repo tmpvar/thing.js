@@ -12,6 +12,7 @@
 ;(function(ns) {
   var
   uid = 0,
+  sid = 0, // event sequence id
   store = {},
   toString = Object.prototype.toString,
   extend = function(a, b) {
@@ -45,6 +46,10 @@
     if (options !== false) {
       return Entity.create(options);
     }
+  };
+
+  ns.Entity.nextSequenceId = function() {
+    return sid++;
   };
 
   ns.Entity.prototype = {
@@ -164,7 +169,8 @@
           this.notify('set', {
             key : key,
             old : old,
-            val : incomingValue
+            val : incomingValue,
+            sid : ns.Entity.nextSequenceId()
           });
         }
       }

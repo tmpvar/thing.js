@@ -194,6 +194,39 @@ specs = [
     ok(called, 'notify should have been called');
   },
 
+  function ensure_global_sequence_id_generation_can_be_overriden(e) {
+
+    e.notify = function(op, event) {
+      equal(event.sid, 'monkey', 'should be overridable');
+    };
+
+    var orig = Entity.nextSequenceId;
+
+    Entity.nextSequenceId = function() {
+      return 'monkey';
+    };
+
+    e.set({ a : 1 });
+
+    Entity.nextSequenceId = orig;
+  },
+
+  function ensure_events_contain_a_unique_sequence_id(e) {
+
+    // by default sids are just incrementing ints
+    var current = false;
+    e.notify = function(op, event) {
+      if (current === false) {
+        current = event.sid;
+        return;
+      }
+      equal(event.sid, current+1, 'the next sid should be +1');
+    }
+
+    e.set('a', 1);
+    e.set('a', 2);
+  },
+
   function ensure_get_supports_an_array_of_keys(e) {
     e.set({
       a : 1,
