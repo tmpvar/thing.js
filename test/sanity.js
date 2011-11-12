@@ -65,7 +65,7 @@ specs = [
   },
 
   function ensure_setter_accepts_multiple_values(e) {
-    e.set({ abc : '1', def : 2});
+    e.set({ abc : '1', def : 2 });
     equal(e.get('abc'), '1', 'key:abc === value:1');
     equal(e.get('def'), 2, 'key:def === value:2');
   },
@@ -182,6 +182,18 @@ specs = [
     var times = e.get(['a','b', 'c'], 'created');
     ok(times[0] === times[1] && times[0] === times[2], 'all keys created at the same time');
     ok(times[0] > 0, 'should be numbers by default');
+  },
+
+  function ensure_simple_trait_creation() {
+    Entity.trait('hello', {
+      hello : function() {
+        return 'world';
+      }
+    });
+
+    var e = Entity.create('hello');
+
+    equal(e.hello(), 'world', 'traits append properties to the prototype')
   }
 ],
 failed = 0, passed = 0, keys = Object.keys(specs), i = 0, l = keys.length;
@@ -210,7 +222,7 @@ function next() {
   };
 
   try {
-    var entity = new Entity();
+    var entity = Entity.create();
     if (test(entity, done) !== false) {
       done();
     } else {

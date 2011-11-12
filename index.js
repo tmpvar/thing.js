@@ -25,6 +25,9 @@
   isArray = function(a) {
     return toString.call(a) == '[object Array]';
   },
+  isFunction = function(a) {
+    return toString.call(a) == '[object Function]';
+  }
 
   compactArray = function(array) {
     var v, ret = [];
@@ -185,8 +188,6 @@
         }
       }
 
-
-
       if (event.done) {
         process.nextTick(event.done);
       }
@@ -238,5 +239,37 @@
       this._uid = address.uid;
     }
   };
+
+  // Entity utility methods
+
+  // Trait definitions
+  var traits = {};
+  ns.Entity.trait = function(name, fn_or_object) {
+    if (traits[name]) {
+      throw new Error('trait "' + name + '" already defined');
+    }
+
+    traits[name] = (isFunction(fn_or_object)) ?
+                    fn_or_object()             :
+                    fn_or_object;
+  };
+
+  ns.Entity.create = function(trait, options) {
+    var ctor = function(options) {
+      ns.Entity.call(this, options);
+    };
+    ctor.prototype = new ns.Entity();
+
+    if (!isArray(trait)) {
+      trait = [trait];
+    }
+
+
+    for (var i = 0, l = trait.length; i<l; i++) {
+      extend(ctor.prototype, traits[trait[i]]);
+    }
+
+    return new ctor(options);
+  }
 
 }(typeof module === 'undefined' ? window : module.exports));
