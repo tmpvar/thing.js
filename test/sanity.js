@@ -102,6 +102,14 @@ specs = [
     ok(e.get('noop') === null, 'undefined keys are returned as null');
   },
 
+  function ensure_setting_multiple_properties_multiple_times(e) {
+    e.set({ a : 1, b: 2 });
+    equal(e.get(['a', 'b']).join(','), '1,2', 'both a and b should consist of the appropriate values');
+
+    e.set({ a : 1, b: 2 });
+    equal(e.get(['a', 'b']).join(','), '1,2', 'both a and b should consist of the appropriate values');
+  },
+
   function ensure_setter_sets_modified_metadata(e, f) {
     e.set('a', 123);
 
@@ -191,9 +199,12 @@ specs = [
       }
     });
 
-    var e = Entity.create('hello');
-
+    var e = Entity.create({ traits : ['hello'] });
     equal(e.hello(), 'world', 'traits append properties to the prototype')
+
+    var e2 = new Entity({ traits : ['hello'] });
+    equal(e2.hello(), 'world', 'traits append properties to the prototype')
+
   }
 ],
 failed = 0, passed = 0, keys = Object.keys(specs), i = 0, l = keys.length;
@@ -222,7 +233,7 @@ function next() {
   };
 
   try {
-    var entity = Entity.create();
+    var entity = new Entity();
     if (test(entity, done) !== false) {
       done();
     } else {

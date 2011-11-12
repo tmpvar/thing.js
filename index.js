@@ -18,6 +18,7 @@
     for (var key in b) {
       a[key] = b[key];
     }
+    return a;
   },
   isString = function(a) {
     return toString.call(a) == '[object String]';
@@ -41,29 +42,9 @@
   };
 
   ns.Entity = function Entity(options) {
-    if (!(this instanceof Entity)) {
-      return new Entity(options);
+    if (options !== false) {
+      return Entity.create(options);
     }
-    uid += 1;
-    this._uid = uid;
-    this._options = options || {};
-
-    if (!store[uid]) {
-      store[uid] = {
-        values  : {},
-        meta    : {}
-      };
-    }
-
-    if (this.init) {
-      this.init();
-    }
-
-    this.time = this.time || this._options.time || Date.now;
-    this.notifyOnSet = this._options.notifyOnSet || false;
-    this.notifyOnGet = this._options.notifyOnGet || false;
-
-    return this;
   };
 
   ns.Entity.prototype = {
@@ -175,7 +156,7 @@
           values[incomingKey].set(incomingValue, options);
         } else {
           old = values[incomingKey].value;
-          values[incomingKey].value = value;
+          values[incomingKey].value = incomingValue;
           values[incomingKey].meta.modified = time;
         }
 
@@ -254,19 +235,35 @@
                     fn_or_object;
   };
 
-  ns.Entity.create = function(trait, options) {
-    var ctor = function(options) {
-      ns.Entity.call(this, options);
+  ns.Entity.create = function(options) {
+    var ctor = function Entity(options) {
+
+      uid += 1;
+      this._uid = uid;
+      this._options = options || {};
+
+      if (!store[uid]) {
+        store[uid] = {
+          values  : {},
+          meta    : {}
+        };
+      }
+
+      if (this.init) {
+        this.init();
+      }
+
+      this.time = this.time || this._options.time || Date.now;
+      this.notifyOnSet = this._options.notifyOnSet || false;
+      this.notifyOnGet = this._options.notifyOnGet || false;
     };
-    ctor.prototype = new ns.Entity();
 
-    if (!isArray(trait)) {
-      trait = [trait];
-    }
+    ctor.prototype = new ns.Entity(false);
 
-
-    for (var i = 0, l = trait.length; i<l; i++) {
-      extend(ctor.prototype, traits[trait[i]]);
+    if (options && options.traits) {
+      for (var i = 0, l = options.traits.length; i<l; i++) {
+        extend(ctor.prototype, traits[options.traits[i]]);
+      }
     }
 
     return new ctor(options);
