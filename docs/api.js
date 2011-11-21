@@ -1,13 +1,13 @@
-Entity.register('reflex.collection', {
+Thing.register('reflex.collection', {
 
   append : function(key, value, options, fn) {
     var
-    event = Entity.createEvent(key, value, options, fn),
+    event = Thing.createEvent(key, value, options, fn),
     slotEvent;
 
 
     for (var key in event.values) {
-      slotEvent = Entity.copy(event);
+      slotEvent = Thing.copy(event);
 
       delete slotEvent.done;
 
@@ -21,11 +21,11 @@ Entity.register('reflex.collection', {
   }
 });
 
-Entity.register('reflex.validator', {
+Thing.register('reflex.validator', {
   validate : function(event) {}
 });
 
-Entity.register('reflex.validation', {
+Thing.register('reflex.validation', {
   features : {
     'reflex.collection'
   },
@@ -57,7 +57,7 @@ Entity.register('reflex.validation', {
   }
 });
 
-Entity.register('reflex.min', {
+Thing.register('reflex.min', {
   features : ['reflex.validator'],
   validate : function(event, fn) {
     var value = parseFloat(event.values[0]), error = null;
@@ -68,7 +68,7 @@ Entity.register('reflex.min', {
   }
 });
 
-Entity.register('reflex.max', {
+Thing.register('reflex.max', {
   features : ['reflex.validator']
   validate : function(event, fn) {
     var value = parseFloat(event.values[0]), error = null;
@@ -79,14 +79,14 @@ Entity.register('reflex.max', {
   }
 });
 
-Entity.register('reflex.field', function() {
+Thing.register('reflex.field', function() {
   features : ['reflex.validation'],
   validators : [],
   get : function() {
 
   },
   set : function(key, value, options, fn) {
-    var event = Entity.createEvent(key, value, options, fn);
+    var event = Thing.createEvent(key, value, options, fn);
 
     // TODO: if there are multiple values being set, each one needs to be
     //       validated
@@ -98,12 +98,12 @@ Entity.register('reflex.field', function() {
         return event.done(errors);
       }
 
-      Entity.set(event);
+      Thing.set(event);
     });
   }
 });
 
-Entity.register('reflex.field.weight', {
+Thing.register('reflex.field.weight', {
   features: [
     'reflex.field',
     'reflex.validation'
@@ -127,8 +127,8 @@ Entity.register('reflex.field.weight', {
   }
 });
 
-// later on we create the entity type
-Entity.register('reflex.product', {
+// later on we create the Thing type
+Thing.register('reflex.product', {
   features : [
     {
       name : 'reflex.collection', // collection of fields
@@ -142,11 +142,11 @@ Entity.register('reflex.product', {
 });
 
 // now we can create instances of reflex products
-var product = Entity.create('reflex.product');
+var product = Thing.create('reflex.product');
 product.set('weight', 201); // throws an error "201 units is certainly too heavy to ship!"
 
 // later on, we realize that 200 doesn't work for every case and we need an exception
-Entity.register('reflex.heavier.product', {
+Thing.register('reflex.heavier.product', {
   features : [
     name : 'reflex.product',
     items : {
@@ -159,18 +159,18 @@ Entity.register('reflex.heavier.product', {
   ]
 });
 
-var heavy = Entity.create('reflex.heavier.product');
+var heavy = Thing.create('reflex.heavier.product');
 heavy.set('weight', 201); // AOK
 heavy.set('weight', 301); // throws an error "Are you serious?"
 
 // Validation Link
-Entity.trait('validation', function(obj, options) {
+Thing.trait('validation', function(obj, options) {
   var
   stepConfig,
   step,
   filterStep = function (event, next, cancel) {
     // hook up the validators as sub-steps in the chain
-    var filterChain = Entity.createFilterChain(this.steps);
+    var filterChain = Thing.createFilterChain(this.steps);
 
     // execute the chain
     filterChain.execute(event, function(error) {
@@ -188,9 +188,9 @@ Entity.trait('validation', function(obj, options) {
       stepConfig = options.attributes[attribute] || {};
 
       // Create and add a validation step to the attribute
-      step = Entity.createFilterStep(stepConfig, filterStep);
+      step = Thing.createFilterStep(stepConfig, filterStep);
 
-      Entity.registerStep('set', attributeName, step);
+      Thing.registerStep('set', attributeName, step);
     }
   }
 
@@ -224,7 +224,7 @@ function greater_than(event, next, cancel) {
 }
 
 // Usage
-var e = new Entity({
+var e = new Thing({
   traits : [{
     name : 'validation',
     attributes : {

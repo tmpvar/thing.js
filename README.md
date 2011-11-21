@@ -1,3 +1,3 @@
-# Entity
+# Thing
 
 More to come shortly.

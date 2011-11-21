@@ -1,6 +1,6 @@
 // TODO:
 //  Async synchronization
-//  Set a property equal to an entity and special case getter/setter access
+//  Set a property equal to an thing and special case getter/setter access
 //  Keep a record of where data came from
 
 // Getter stuff
@@ -42,17 +42,17 @@
     return ret;
   };
 
-  ns.Entity = function Entity(options) {
+  ns.Thing = function Thing(options) {
     if (options !== false) {
-      return Entity.create(options);
+      return Thing.create(options);
     }
   };
 
-  ns.Entity.nextSequenceId = function() {
+  ns.Thing.nextSequenceId = function() {
     return sid++;
   };
 
-  ns.Entity.prototype = {
+  ns.Thing.prototype = {
     init      : false,
     notify    : function nop(){},
 
@@ -170,7 +170,7 @@
             key : key,
             old : old,
             val : incomingValue,
-            sid : ns.Entity.nextSequenceId()
+            sid : ns.Thing.nextSequenceId()
           });
         }
       }
@@ -227,11 +227,11 @@
     }
   };
 
-  // Entity utility methods
+  // Thing utility methods
 
   // Trait definitions
   var traits = {};
-  ns.Entity.trait = function(name, fn_or_object) {
+  ns.Thing.trait = function(name, fn_or_object) {
     if (traits[name]) {
       throw new Error('trait "' + name + '" already defined');
     }
@@ -241,8 +241,8 @@
                     fn_or_object;
   };
 
-  ns.Entity.create = function(options) {
-    var ctor = function Entity(options) {
+  ns.Thing.create = function(options) {
+    var ctor = function Thing(options) {
 
       uid += 1;
       this._uid = uid;
@@ -264,7 +264,7 @@
       this.notifyOnGet = this._options.notifyOnGet || false;
     };
 
-    ctor.prototype = new ns.Entity(false);
+    ctor.prototype = new ns.Thing(false);
 
     if (options && options.traits) {
       for (var i = 0, l = options.traits.length; i<l; i++) {

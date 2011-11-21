@@ -17,15 +17,15 @@ less = function(a, b, msg) {
 fail = function(msg) {
   throw new Error(msg);
 },
-Entity = (typeof Entity === 'undefined') ?
-          require('../').Entity            :
-          Entity,
+Thing = (typeof Thing === 'undefined') ?
+          require('../').Thing            :
+          Thing,
 
 specs = [
   function sanity(){
-    var e = new Entity(), f = Entity();
-    ok(e instanceof Entity, 'e is an instance of Entity');
-    ok(f instanceof Entity, 'f is an instance of Entity');
+    var e = new Thing(), f = Thing();
+    ok(e instanceof Thing, 'e is an instance of Thing');
+    ok(f instanceof Thing, 'f is an instance of Thing');
     ok(f._uid !== e._uid, 'e and f do not share a uid');
   },
 
@@ -127,7 +127,7 @@ specs = [
   },
 
   function ensure_the_time_function_is_configurable(nop, f) {
-    var e = Entity({
+    var e = Thing({
       time : function() {
         return -1;
       }
@@ -139,7 +139,7 @@ specs = [
 
 
   function ensure_entities_can_jump_data_slots(e) {
-    var a  = Entity();
+    var a  = Thing();
     a.set('a', 123);
     e.set('b', 'test');
 
@@ -200,15 +200,15 @@ specs = [
       equal(event.sid, 'monkey', 'should be overridable');
     };
 
-    var orig = Entity.nextSequenceId;
+    var orig = Thing.nextSequenceId;
 
-    Entity.nextSequenceId = function() {
+    Thing.nextSequenceId = function() {
       return 'monkey';
     };
 
     e.set({ a : 1 });
 
-    Entity.nextSequenceId = orig;
+    Thing.nextSequenceId = orig;
   },
 
   function ensure_events_contain_a_unique_sequence_id(e) {
@@ -245,30 +245,30 @@ specs = [
   },
 
   function ensure_simple_trait_creation() {
-    Entity.trait('hello', {
+    Thing.trait('hello', {
       hello : function() {
         return 'world';
       }
     });
 
-    var e = Entity.create({ traits : ['hello'] });
+    var e = Thing.create({ traits : ['hello'] });
     equal(e.hello(), 'world', 'traits append properties to the prototype')
 
-    var e2 = new Entity({ traits : ['hello'] });
+    var e2 = new Thing({ traits : ['hello'] });
     equal(e2.hello(), 'world', 'traits append properties to the prototype')
   },
 
   function ensure_attributes_can_be_calculated() {
-    Entity.trait('calculated-attributes', {
+    Thing.trait('calculated-attributes', {
       attribute : {
         get : function() {
-          return 'hello there: ' + Entity.prototype.get.apply(this, attributes);
+          return 'hello there: ' + Thing.prototype.get.apply(this, attributes);
         },
         value : ''
       }
     });
 
-    var e = Entity.create({ traits : ['calculated-attributes']});
+    var e = Thing.create({ traits : ['calculated-attributes']});
     e.set('attribute', 'monkey');
 
     equal(e.get('attribute'), 'hello there: monkey',
@@ -303,7 +303,7 @@ function next() {
   };
 
   try {
-    var entity = new Entity();
+    var entity = new Thing();
     if (test(entity, done) !== false) {
       done();
     } else {

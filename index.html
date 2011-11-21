@@ -1,16 +1,16 @@
 <html>
 <head>
-  <title>Entity sandbox</title>
+  <title>Thing sandbox</title>
   <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
-  <h1>Entity sandbox</h1>
+  <h1>Thing sandbox</h1>
   <p>Protip: use the console</p>
 
   <h2>Basic get/set</h2>
   <p>
     <pre>
-var e = new Entity();
+var e = new Thing();
 e.set({ test : 123 });
 console.log('none:', e.get('none'));
 console.log('test:', e.get('test'));
@@ -20,7 +20,7 @@ console.log('test:', e.get('test'));
   <h2>Get multiple values</h2>
   <p>
     <pre>
-var e = new Entity();
+var e = new Thing();
 e.set({ test : 123, hello: 'world' });
 setTimeout(function() {
   e.set('test', 1234);
@@ -40,13 +40,13 @@ setTimeout(function() {
   <h2>Traits</h2>
   <p>
     <pre>
-Entity.trait('test', {
+Thing.trait('test', {
   hello : function() {
     return 'world';
   }
 });
 
-var e = Entity.create({ traits : ['test'] });
+var e = Thing.create({ traits : ['test'] });
 e.hello(); // outputs 'world'
     </pre>
   </p>
