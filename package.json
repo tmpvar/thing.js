@@ -1,6 +1,6 @@
 {
   "author": "Elijah Insua <tmpvar@gmail.com> (http://tmpvar.com)",
-  "name": "entity",
+  "name": "thing",
   "description": "metaobject with a dashes of CLOS and FRP",
   "version": "0.0.1",
   "repository": {
