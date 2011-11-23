@@ -1,15 +1,17 @@
 {
   "author": "Elijah Insua <tmpvar@gmail.com> (http://tmpvar.com)",
   "name": "thing",
-  "description": "metaobject with a dashes of CLOS and FRP",
-  "version": "0.0.1",
+  "description": "A base object and with a minimal traits system",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/tmpvar/entity.js.git"
+    "url": "git://github.com/tmpvar/thingjs.git"
   },
   "engines": {
     "node": "*"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "nodeunit" : "*"
+  }
 }
