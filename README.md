@@ -50,6 +50,37 @@ core.
 The "extras" mentioned above can easily be implemented in traits. The goal of
 this library is to remain small and flexible.
 
+### Construction
+
+Things are created by
+
+```javascript
+var obj = Thing.create(['some', 'traits']);
+```
+
+or by creating a class and instantiating that
+
+```javascript
+var Class = Thing.class(['some', 'traits']);
+var obj = new Class()
+```
+
+Classes have trait management functions that will affect traits created in the future
+
+```javascript
+var Class = Thing.class(['some', 'traits']);
+
+console.log(Class.has('some')) // true
+
+Class.remove('some');
+
+console.log(Class.has('some')) // false
+
+Class.add('another trait');
+
+console.log(Class.has('another trait')) // true
+```
+
 ### Metadata
 
 All instantiated things have a `meta` method which acts as a getter and setter.
