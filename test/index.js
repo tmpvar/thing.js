@@ -8,6 +8,73 @@ var tests = {
     t.done();
   },
 
+  'composite traits' : function(t) {
+    Thing.trait('child', {
+      child : true
+    });
+
+    Thing.trait('child2', {
+      child2 : true
+    });
+
+    Thing.trait('parent', ['child', 'child2'], {
+      parent : true
+    });
+
+    var Parent = Thing.class(['parent']);
+    var p = new Parent();
+    t.ok(p.child, 'child trait was applied');
+    t.ok(p.child2, 'child2 trait was applied');
+    t.ok(p.parent, 'parent trait was applied');
+    t.done();
+  },
+
+  'basic thing creation' : function(t) {
+    var baseThing = Thing.create();
+    t.ok(baseThing.meta, 'this is an empty thing');
+    t.done();
+  },
+
+  'thing creation with traits' : function(t) {
+    Thing.trait('first', { first : true });
+    Thing.trait('second', { second : true });
+    var instance = Thing.create(['first', 'second']);
+
+    t.ok(instance.first, 'first trait was applied');
+    t.ok(instance.second, 'second trait was applied');
+    t.done();
+  },
+
+  'expose traits on class' : function(t) {
+    Thing.trait('a trait', {});
+    var Class = Thing.class(['a trait']);
+    t.ok(Class.traits.has('a trait'), 'it has a trait');
+    t.done()
+  },
+
+  'remove traits before creation' : function(t) {
+    Thing.trait('trait', {});
+    var Class = Thing.class(['trait']);
+    t.ok(Class.traits.has('trait'), 'it has a trait');
+    Class.traits.remove('trait');
+    t.equals(Class.traits.has('trait'), false, 'it no longer has a trait');
+    t.done();
+  },
+
+  'class extension' : function(t) {
+    Thing.trait('base', { base : true });
+    Thing.trait('extension', { extension : true });
+
+    var Class = Thing.class(['base']);
+    Class.traits.add('extension');
+
+    var instance = new Class();
+    t.ok(instance.base, 'base was defined');
+    t.ok(instance.extension, 'extension was defined');
+
+    t.done();
+  },
+
   'class creation' : function(t) {
     Thing.trait('hello', {
       hello : function() { return 'world'; }

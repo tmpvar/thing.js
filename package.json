@@ -1,7 +1,7 @@
 {
   "author": "Elijah Insua <tmpvar@gmail.com> (http://tmpvar.com)",
   "name": "thing",
-  "description": "Objects with metadata and traits",
+  "description": "flexible metaobjects with trait driven behavior",
   "version": "0.1.2",
   "repository": {
     "type": "git",
