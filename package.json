@@ -2,10 +2,10 @@
   "author": "Elijah Insua <tmpvar@gmail.com> (http://tmpvar.com)",
   "name": "thing",
   "description": "A base object and with a minimal traits system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
-    "url": "git://github.com/tmpvar/thingjs.git"
+    "url": "git://github.com/tmpvar/thing.js.git"
   },
   "engines": {
     "node": "*"
