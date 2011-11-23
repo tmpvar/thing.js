@@ -13,5 +13,8 @@
   "dependencies": {},
   "devDependencies": {
     "nodeunit" : "*"
+  },
+  "scripts" : {
+    "test" : "test/runner"
   }
 }
