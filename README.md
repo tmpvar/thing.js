@@ -114,7 +114,7 @@ Thing.trait('trait name', function(proto) {
 or
 
 ```javascript
-Thing.trait('trait name', function(proto) {
+Thing.trait('trait name', {
   prototypeProperty : 1
 });
 ```
