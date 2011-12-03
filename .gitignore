@@ -1,3 +1,4 @@
 gmon.out
 .monitor
 node_modules
+npm-debug.log

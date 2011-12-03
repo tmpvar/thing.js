@@ -1,5 +1,3 @@
-
-
 var tests = {
 
   'trait creation' : function(t) {
@@ -50,6 +48,25 @@ var tests = {
     var Class = Thing.class(['a trait']);
     t.ok(Class.traits.has('a trait'), 'it has a trait');
     t.done()
+  },
+
+  'thing initialization' : function(t) {
+    Thing.trait('trait1', function(proto) {
+      proto.init.push(function(obj, options) {
+        obj.options = options
+      });
+    });
+
+    Thing.trait('trait2', function(proto) {
+      proto.init.push(function(obj, options) {
+        obj.b = true;
+      });
+    });
+
+    var thing = Thing.create(['trait1', 'trait2'], { a : true });
+    t.ok(thing.options.a, 'options should be appended');
+    t.ok(thing.b, 'b should be appended');
+    t.done();
   },
 
   'remove traits before creation' : function(t) {
