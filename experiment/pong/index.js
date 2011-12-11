@@ -19,26 +19,80 @@ Player.prototype.link = function() {};
 var human = new Player();
 var ai = new Player();
 
-Thing.trait('game.solid.rectangular', ['game.solid'], function(proto) {
+Thing.trait('game.renderable', ['game.solid'], function(proto) {
   proto.init.push(function(obj, options) {
     obj.set('color', options.color || '#FF00FF');
+    obj.set('renderSteps', []);
   });
 
-  proto.render = function(ctx) {
+  proto.beginRender = function(ctx) {
     ctx.save();
-      ctx.fillStyle = this.get('color');
-      var center = this.get('body').GetBody().GetWorldCenter()
-      ctx.translate(center.x*RATIO, center.y*RATIO);
-      ctx.rotate(this.get('rotation') || 0);
-      ctx.fillRect(
-        -(this.get('width')/2),
-        -(this.get('height')/2),
-        this.get('width'),
-        this.get('height')
-      );
+    // TODO: move getting the world center out of here
+    var center = this.get('body').GetBody().GetWorldCenter()
+    ctx.translate(center.x*RATIO, center.y*RATIO);
+    ctx.rotate(this.get('rotation') || 0);
+  };
+
+  proto.render = function(ctx) {
+    this.beginRender(ctx);
+    var steps = this.get('renderSteps');
+
+    for (var i=0, l=steps.length; i<l; i++) {
+      steps[i].call(this, ctx);
+    }
+
+    this.endRender(ctx);
+  };
+
+  proto.endRender = function(ctx) {
     ctx.restore();
   }
 });
+
+Thing.trait('game.solid.rectangular', ['game.renderable'], function(proto) {
+  proto.init.push(function(obj, options) {
+    obj.set('physicalShape', new b2PolygonShape);
+    obj.get('physicalShape').SetAsBox(
+      obj.get('width')/RATIO/2,
+      obj.get('height')/RATIO/2
+    );
+
+    obj.get('renderSteps').push(function(ctx) {
+      ctx.fillStyle = this.get('color');
+      ctx.fillRect(
+        -(this.get('width')/2), // center on the x
+        -(this.get('height')/2), // center on the y
+        this.get('width'),
+        this.get('height')
+      );
+    });
+  });
+});
+
+Thing.trait('game.solid.circular', ['game.renderable'], function(proto) {
+  proto.init.push(function(obj, options) {
+    obj.set('physicalShape', new b2CircleShape);
+    obj.get('physicalShape').SetRadius(obj.get('width')/RATIO/2);
+
+    obj.get('renderSteps').push(function(ctx) {
+      ctx.fillStyle = this.get('color');
+      ctx.beginPath();
+      ctx.arc(
+        0, // center on the x
+        0, // center on the y
+        this.get('width')/2,
+        0,
+        Math.PI*2,
+        true
+      );
+
+
+      ctx.closePath();
+      ctx.fill();
+    });
+  });
+});
+
 
 Thing.trait('object.physics.static', function(proto) {
   proto.init.push(function(o, options) {
@@ -59,10 +113,10 @@ Thing.trait('object.physics.static', function(proto) {
 var Paddle = Thing.class(['game.solid.rectangular', 'object.physics.static']);
 
 var aiPaddle = new Paddle({
-  y : Thing.constant(50),
+  y : Thing.constant(10),
   x : 150,
-  width : Thing.constant(50),
-  height: Thing.constant(25),
+  width : Thing.constant(80),
+  height: Thing.constant(5),
   color : '#ff0000',
   density : 10,
   restitution: 0,
@@ -72,12 +126,12 @@ var aiPaddle = new Paddle({
 human.link(playerPaddle);
 
 var playerPaddle = new Paddle({
-  y: Thing.constant(525),
+  y: Thing.constant(590),
   x : 150,
-  width : Thing.constant(50),
-  height: Thing.constant(25),
+  width : Thing.constant(80),
+  height: Thing.constant(5),
   color : 'blue',
-  density : 1,
+  density : 10,
   restitution: 0,
   friction : 1000
 });
@@ -159,19 +213,19 @@ human.link(topw);
 
 var puck = Thing.create([
   'pong.physics.object',
-  'game.solid.rectangular',
+  'game.solid.circular',
   'object.physics.static'
 ], {
   x : 200,
   y : 250,
-  width : 10,
-  height : 10,
+  width : 20,
+  height : 20,
   reset : function() {
     // TODO: reset the puck to 0 and randomly choose a direction
   },
   color : 'black',
-  friction : 1,
-  restitution : 1,
+  friction : 1000,
+  restitution : 1.01,
   density : 1
 });
 
@@ -235,8 +289,7 @@ Thing.trait(['pong.physics.world'], function(proto) {
 
     var bodyDef = new b2BodyDef;
     bodyDef.type = node.get('type') || b2Body.b2_dynamicBody;
-    fixDef.shape = new b2PolygonShape;
-    fixDef.shape.SetAsBox(node.get('width')/RATIO/2, node.get('height')/RATIO/2);
+    fixDef.shape = node.get('physicalShape');
 
     bodyDef.position.Set(node.get('x')/RATIO, node.get('y')/RATIO);
     var body = this.get('world').CreateBody(bodyDef).CreateFixture(fixDef);

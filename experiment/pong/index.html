@@ -42,11 +42,12 @@
       scene.add(playerPaddle);
       playerPaddle.get('body').GetBody().SetFixedRotation(true);
       playerPaddle.get('body').GetBody().SetBullet(true);
-      playerPaddle.get('body').GetBody().SetLinearDamping(20.0);
+      playerPaddle.get('body').GetBody().SetLinearDamping(25.0);
 
       scene.add(aiPaddle);
       aiPaddle.get('body').GetBody().SetFixedRotation(true);
       aiPaddle.get('body').GetBody().SetBullet(true);
+      aiPaddle.get('body').GetBody().SetLinearDamping(25.0);
 
       scene.add(puck);
       scene.add(topw);
@@ -74,7 +75,7 @@
         ctx.fillRect(0, 0, width, height)
 
         // TODO: this should not be in the render loop
-        var impulse = 1;
+        var impulse = 5;
 
         if (keys[39]) { // right arrow
             playerPaddle.get('body').GetBody().ApplyImpulse({
