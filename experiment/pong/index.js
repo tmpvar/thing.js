@@ -113,7 +113,7 @@ Thing.trait('object.physics.static', function(proto) {
 var Paddle = Thing.class(['game.solid.rectangular', 'object.physics.static']);
 
 var aiPaddle = new Paddle({
-  y : Thing.constant(10),
+  y : Thing.constant(1),
   x : 150,
   width : Thing.constant(80),
   height: Thing.constant(5),
@@ -126,7 +126,7 @@ var aiPaddle = new Paddle({
 human.link(playerPaddle);
 
 var playerPaddle = new Paddle({
-  y: Thing.constant(590),
+  y: Thing.constant(597),
   x : 150,
   width : Thing.constant(80),
   height: Thing.constant(5),
@@ -167,10 +167,10 @@ var Wall = Thing.class([
   'object.physics.static'
 ]);
 
-var wallcolor = "rgba(255,0,255,1)"
+var wallcolor = "#94654A"
 var topw = new Wall({
   x : Thing.constant(200),
-  y : Thing.constant(5),
+  y : Thing.constant(-5),
   width : Thing.constant(400),
   height : Thing.constant(10),
   color : wallcolor,
@@ -179,28 +179,28 @@ var topw = new Wall({
 });
 
 var leftw = new Wall({
-  x : Thing.constant(5),
-  y : Thing.constant(300),
+  x : Thing.constant(-5),
+  y : Thing.constant(299),
   width : Thing.constant(10),
-  height : Thing.constant(578),
-  color : 'blue',
-  density : 100000000,
+  height : Thing.constant(599),
+  color : wallcolor,
+  density : 1000000,
   restitution : 0
 });
 
 var rightw = new Wall({
-  x : Thing.constant(395),
+  x : Thing.constant(405),
   y : Thing.constant(300),
   width : Thing.constant(10),
-  height : Thing.constant(578),
-  color : 'green',
+  height : Thing.constant(599),
+  color : wallcolor,
   density : 10000000,
   restitution : 0
 });
 
 var bottomw = new Wall({
   x : Thing.constant(200),
-  y : Thing.constant(590),
+  y : Thing.constant(605),
   width : Thing.constant(400),
   height : Thing.constant(10),
   color : wallcolor,
@@ -211,11 +211,68 @@ var bottomw = new Wall({
 ai.link(bottomw);
 human.link(topw);
 
-var puck = Thing.create([
+Thing.trait('pong.puck', [
   'pong.physics.object',
   'game.solid.circular',
   'object.physics.static'
-], {
+], function(proto) {
+
+  proto.init.push(function(obj, options) {
+    obj.get('renderSteps').push(function(ctx) {
+      ctx.fillStyle = this.get('color');
+      ctx.beginPath();
+      ctx.arc(
+        0, // center on the x
+        0, // center on the y
+        this.get('width')/2,
+        0,
+        Math.PI*2,
+        true
+      );
+
+
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath();
+      ctx.arc(
+        0, // center on the x
+        0, // center on the y
+        (this.get('width')/2)*.75,
+        0,
+        Math.PI*2,
+        true
+      );
+
+
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.save();
+        ctx.rotate(-this.get('rotation') || 0);
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.beginPath();
+        ctx.arc(
+          2, // center on the x
+          2, // center on the y
+          (this.get('width')/2)*1.05,
+          0,
+          Math.PI*2,
+          true
+        );
+
+
+        ctx.closePath();
+        ctx.fill();
+      ctx.restore();
+    });
+  });
+
+});
+
+
+var puck = Thing.create(['pong.puck'], {
   x : 200,
   y : 250,
   width : 20,
@@ -223,7 +280,7 @@ var puck = Thing.create([
   reset : function() {
     // TODO: reset the puck to 0 and randomly choose a direction
   },
-  color : 'black',
+  color : '#28D371',
   friction : 1000,
   restitution : 1.01,
   density : 1
@@ -278,7 +335,7 @@ Thing.trait(['pong.physics.world'], function(proto) {
 
   proto.tick = function() {
     this.get('world').Step(1/60, 10, 10);
-    this.get('world').DrawDebugData();
+    //this.get('world').DrawDebugData();
   };
 
   proto.addBody = function(node) {

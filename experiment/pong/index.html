@@ -8,18 +8,109 @@
   <script type="text/javascript" src="thing.game.js"></script>
   <script type="text/javascript" src="index.js"></script>
   <style type="text/css">
+
+    @font-face {
+      font-family: 'signage';
+      src: url('font/EHSMB.ttf');
+    }
+
     body {
       background: #404040;
       padding:0;
-      margin:0;
+      margin:10px auto 0 auto;
+      width: 420px;
     }
     #scene {
-      margin: 0 auto;
+      clear:both;
+      float:left;
+      border-size: 0 1px 0 1px;
+      border-radius: 0px 0px 5px 5px;
+      -moz-border-radius: 0px 0px 5px 5px;
+      -webkit-border-radius: 0px 0px 5px 5px;
+      border: 1px solid #a0a0a0;
+      border-top:none;
+      -webkit-box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+      -moz-box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+      box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+      padding: 5px;
+      background-color: #202020;
     }
+    #scoreboard {
+      width: 390px;
+
+      border-radius: 5px 5px 0px 0px;
+      -moz-border-radius: 5px 5px 0px 0px;
+      -webkit-border-radius: 5px 5px 0px 0px;
+      border: 1px solid #909090;
+      border-bottom:none;
+
+      -webkit-box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+      -moz-box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+      box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+
+
+      background: #454545;
+      color: white;
+      float:left;
+      padding:0 10px;
+    }
+      #scoreboard div {
+        font-family: verdana, arial;
+        float: right;
+        width: 30px;
+        padding: 10px;
+        font-size: 22px;
+        font-weight: bolder;
+        color: #fff;
+      }
+
+      #scoreboard .score {
+        font-family: signage;
+        display:block;
+        border:1px solid #000;
+        padding-left: 5px;
+        font-weight: bold;
+        font-size: 30px;
+        line-height: 35px;
+        width: 42px;
+        height: 30px;
+        background: #101918;
+
+        color: #F60202;
+        text-shadow: 1px 1px 5px #FF0002;
+        filter: dropshadow(color=#FF0002, offx=1, offy=1);
+      }
+
+      #scoreboard .human .score {
+        color: #00f;
+        text-shadow: 1px 1px 5px #00f;
+        filter: dropshadow(color=#FF0002, offx=1, offy=1);
+      }
+
+      #scoreboard h1 {
+        float:left;
+        font-size: 22px;
+        color: #909090;
+        font-family: verdana, arial;
+      }
   </style>
 </head>
 <body>
-  <canvas id="scene"></canvas>
+  <div class="state ingame">
+    <div id="scoreboard">
+      <h1>Thing pong!</h1>
+      <div class="ai">
+      <span class="score">00</span>
+      </div>
+
+      <div class="human">
+        <span class="score">00</span>
+      </div>
+    </div>
+    <canvas id="scene"></canvas>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAYAAAC56t6BAAAAIUlEQVQIHWOMi4v7z8zMzMDEyMjI8OfPHwamX79+MYAAAGu+CA1lJV4pAAAAAElFTkSuQmCC" id="backgroundImage" style="display:none" />
+  </div>
+
   <script type="text/javascript">
     domready(function() {
       var canvas = document.getElementById('scene');
@@ -29,7 +120,7 @@
       var nextTick = (window.requestAnimationFrame) ?
                       window.requestAnimationFrame  :
                       function(fn) {
-                        setTimeout(fn, 1000/40);
+                        setTimeout(fn, 1000/60);
                       };
 
       var scene = window.scene = Thing.create(['game.scene', 'pong.physics.world'], {
@@ -67,12 +158,15 @@
         37 : false
       };
 
+      var backgroundImage = document.getElementById('backgroundImage');
+
       var render = function render() {
         canvas.width = 0;
         canvas.width = width;
         canvas.height = height;
-        ctx.fillStyle = '#208020';
-        ctx.fillRect(0, 0, width, height)
+
+        ctx.fillStyle = ctx.createPattern(backgroundImage, 'repeat')
+        ctx.fillRect(0, 0, width, height);
 
         // TODO: this should not be in the render loop
         var impulse = 5;
@@ -103,6 +197,7 @@
         scene.render(ctx);
         nextTick(render);
       };
+
       render();
 
       document.addEventListener('keydown', function(e) {
