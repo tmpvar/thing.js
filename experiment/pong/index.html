@@ -1,0 +1,117 @@
+<html>
+<head>
+  <title>Thing Pong experiment!</title>
+  <script type="text/javascript" src="ready.min.js"></script>
+  <script type="text/javascript" src="../../lib/thing.js"></script>
+  <script type="text/javascript" src="box2d.js"></script>
+  <script type="text/javascript" src="thing.object.js"></script>
+  <script type="text/javascript" src="thing.game.js"></script>
+  <script type="text/javascript" src="index.js"></script>
+  <style type="text/css">
+    body {
+      background: #404040;
+      padding:0;
+      margin:0;
+    }
+    #scene {
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <script type="text/javascript">
+    domready(function() {
+      var canvas = document.getElementById('scene');
+      var width = 400;
+      var height = 600;
+      var ctx = window.ctx = canvas.getContext('2d');
+      var nextTick = (window.requestAnimationFrame) ?
+                      window.requestAnimationFrame  :
+                      function(fn) {
+                        setTimeout(fn, 1000/40);
+                      };
+
+      var scene = window.scene = Thing.create(['game.scene', 'pong.physics.world'], {
+        gravity : { y : 0, x : 0}
+      });
+      var renderer = Thing.create(['game.renderer.canvas']);
+      var camera = Thing.create(['game.camera']);
+      camera.set('target', scene);
+
+      scene.add(playerPaddle);
+      playerPaddle.get('body').GetBody().SetFixedRotation(true);
+      playerPaddle.get('body').GetBody().SetBullet(true);
+      playerPaddle.get('body').GetBody().SetLinearDamping(20.0);
+
+      scene.add(aiPaddle);
+      aiPaddle.get('body').GetBody().SetFixedRotation(true);
+      aiPaddle.get('body').GetBody().SetBullet(true);
+
+      scene.add(puck);
+      scene.add(topw);
+      scene.add(leftw);
+      scene.add(rightw);
+      scene.add(bottomw);
+
+      // TODO: refactor this into a trait
+      puck.get('body').GetBody().ApplyImpulse({x:0, y:0.06}, {
+        x : puck.get('x')/RATIO,
+        y : puck.get('y')/RATIO
+      });
+      puck.get('body').GetBody().SetBullet(true);
+
+      var keys = {
+        39 : false,
+        37 : false
+      };
+
+      var render = function render() {
+        canvas.width = 0;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.fillStyle = '#208020';
+        ctx.fillRect(0, 0, width, height)
+
+        // TODO: this should not be in the render loop
+        var impulse = 1;
+
+        if (keys[39]) { // right arrow
+            playerPaddle.get('body').GetBody().ApplyImpulse({
+              x : impulse,
+              y : 0
+            }, {
+              x : playerPaddle.get('x')/RATIO,
+              y : playerPaddle.get('y')/RATIO
+            });
+        }
+
+        if (keys[37]) { // left arrow
+          playerPaddle.get('body').GetBody().ApplyImpulse({
+            x : -impulse,
+            y : 0
+          }, {
+            x : playerPaddle.get('x')/RATIO,
+            y : playerPaddle.get('y')/RATIO
+          });
+        }
+
+
+        // TODO: this should not be on the render loop
+        scene.tick();
+        scene.render(ctx);
+        nextTick(render);
+      };
+      render();
+
+      document.addEventListener('keydown', function(e) {
+        keys[e.keyCode] = true;
+      });
+      document.addEventListener('keyup', function(e) {
+        keys[e.keyCode] = false;
+      });
+
+    });
+  </script>
+</body>
+</html>

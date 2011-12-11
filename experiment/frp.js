@@ -37,7 +37,6 @@ Thing.trait('value.stream', function(proto) {
     for (var i=0, l=this._observers.length; i<l; i++) {
       this._observers[i]();
     }
-
   };
 
   proto.resolve = function(obj, slotName, returnObject) {
