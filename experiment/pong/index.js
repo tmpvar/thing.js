@@ -121,9 +121,9 @@ var aiPaddle = new Paddle({
   width : Thing.constant(80),
   height: Thing.constant(10),
   color : '#ff0000',
-  density : 10,
+  density : 100,
   restitution: 0,
-  friction : 10
+  friction : .1
 });
 
 human.set('paddle', playerPaddle);
@@ -134,9 +134,9 @@ var playerPaddle = new Paddle({
   width : Thing.constant(80),
   height: Thing.constant(10),
   color : 'blue',
-  density : 10,
+  density : 100,
   restitution: 0,
-  friction : 10
+  friction : .1
 });
 
 ai.set('paddle', aiPaddle);
@@ -289,7 +289,7 @@ var puck = Thing.create(['pong.puck'], {
   },
   color : '#28D371',
   friction : 1,
-  restitution : 1,
+  restitution : 1.001,
   density : 0
 });
 
@@ -300,7 +300,7 @@ var updateAI = function() {
   puckY = puck.get('y'),
   aiX   = aiPaddle.get('x'),
   aiY   = aiPaddle.get('y'),
-  impulse = 0.3;
+  impulse = 100;
 
 
   if (puckX < aiX) {
@@ -308,6 +308,8 @@ var updateAI = function() {
   } else if (puckX === aiX) {
     impulse = 0;
   }
+
+  impulse = (Math.abs(puckX-aiX)/400) * impulse * (1-Math.abs(puckY-aiY)/600);
 
   aiPaddle.get('body').GetBody().ApplyImpulse({x: impulse, y: 0 }, {
     x : aiPaddle.get('x')/RATIO,
@@ -341,7 +343,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
     var gravity = new b2Vec2(options.gravity.x || 0, options.gravity.y || 0);
 
     // TODO: externalize gravity with Thing.Value
-
+    Box2D.Common.b2Settings.b2_velocityThreshold = 0;
     obj.set('world', new b2World(gravity, true));
     if (obj.get('children')) {
       obj.ref('children').on(function(node) {
@@ -353,7 +355,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
 
     debugDraw.SetSprite(ctx);
     debugDraw.SetDrawScale(RATIO);
-    debugDraw.SetFillAlpha(0.4);
+    debugDraw.SetFillAlpha(0.1);
     debugDraw.SetLineThickness(5.0);
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
 
@@ -434,9 +436,9 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
 
   proto.tick = function() {
     this.get('world').Step(1/60, 10, 10);
-    if (this.get('debug.physics')) {
+    //if (this.get('debug.physics')) {
       this.get('world').DrawDebugData();
-    }
+    //}
   };
 
   proto.addBody = function(node) {
