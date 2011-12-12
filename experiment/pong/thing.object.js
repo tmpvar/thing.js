@@ -54,7 +54,7 @@ Thing.trait('object', function(proto) {
     return ret;
   },
 
-  proto.reference = function(k) {
+  proto.reference = proto.ref = function(k) {
     return Thing.createReference(this, k, this._store[k]);
   }
 });
@@ -102,13 +102,67 @@ Thing.trait('object.value', function(proto) {
 
 Thing.Value = Thing.class(['object.value']);
 
+Thing.trait('object.collection', ['object.value'], function(proto) {
+
+  proto.init.push(function(obj) {
+    obj.meta('contains', {});
+  });
+
+  proto.add = function(obj) {
+    this.current.push(obj);
+    if (obj && obj.meta) {
+      this.meta('contains')[obj.meta('id')] = true;
+    }
+    this.notify(obj);
+  };
+
+  proto.wrapped = true;
+
+  proto.length = function() {
+    return this.current.length || 0
+  };
+
+  proto.remove = function(obj) {
+    var current = this.current.length;
+    while(current--) {
+      if (this.current[current] === obj) {
+        this.current.splice(current, 1);
+      }
+    }
+    delete this.meta('contains')[obj.meta('id')];
+    this.notify(obj);
+  };
+
+  proto.filter = function (fn) {
+    var current = this.current.length;
+    while(current--) {
+      if (!fn(this.current[current])) {
+        this.current.splice(current, 1);
+      }
+    }
+  };
+
+  proto.each = function(fn) {
+    var i = 0, l=this.current.length;
+    for (i; i<l; i++) {
+      if (fn(this.current[i]) === false) {
+        break;
+      }
+    }
+  };
+
+  proto.intersect = function(collection) {
+    console.log('contains', this.meta('contains'));
+  };
+});
+
+Thing.Collection = Thing.class(['object.collection']);
+Thing.createCollection = function(array) {
+  return new (Thing.Collection)(array);
+};
+
 Thing.constant = function(val) {
   var ret = Thing.wrap(val);
   ret.set = function() {};
   return ret;
 };
-
-Thing.when = function(value) {
-  // TODO: enforce CPS
-  return value;
-}

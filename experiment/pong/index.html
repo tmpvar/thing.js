@@ -61,6 +61,7 @@
         font-size: 22px;
         font-weight: bolder;
         color: #fff;
+        margin-right: 10px;
       }
 
       #scoreboard .score {
@@ -99,11 +100,11 @@
     <div id="scoreboard">
       <h1>Thing pong!</h1>
       <div class="ai">
-      <span class="score">00</span>
+      <span id="ai-score" class="score">00</span>
       </div>
 
       <div class="human">
-        <span class="score">00</span>
+        <span id="human-score" class="score">00</span>
       </div>
     </div>
     <canvas id="scene"></canvas>
@@ -115,6 +116,7 @@
       var canvas = document.getElementById('scene');
       var width = 400;
       var height = 600;
+      var puckImpulse = 0.06;
       var ctx = window.ctx = canvas.getContext('2d');
       var nextTick = (window.requestAnimationFrame) ?
                       window.requestAnimationFrame  :
@@ -125,11 +127,13 @@
       var scene = window.scene = Thing.create(['game.scene', 'pong.physics.world'], {
         gravity : { y : 0, x : 0}
       });
+
       var renderer = Thing.create(['game.renderer.canvas']);
       var camera = Thing.create(['game.camera']);
       camera.set('target', scene);
 
       scene.add(playerPaddle);
+
       playerPaddle.get('body').GetBody().SetFixedRotation(true);
       playerPaddle.get('body').GetBody().SetBullet(true);
       playerPaddle.get('body').GetBody().SetLinearDamping(25.0);
@@ -145,8 +149,49 @@
       scene.add(rightw);
       scene.add(bottomw);
 
+
+      // TODO: target should be source
+      var scoreboard = Thing.create('object', {
+        human : new DOMValue({
+          target : human.ref('score'),
+          el : document.getElementById('human-score')
+        }),
+        ai : new DOMValue({
+          target : ai.ref('score'),
+          el :document.getElementById('ai-score')
+        })
+      });
+
+      scene.when(puck).collidesWith(bottomw, topw).then(function(wall) {
+        var score = wall.get('player').get('score') + 1;
+        wall.get('player').set('score', score);
+
+        var body = puck.get('body').GetBody();
+        body.SetAwake(false);
+        body.ResetMassData();
+
+        body.SetLinearVelocity({ x : 0, y : 0 });
+        body.SetAngularVelocity(0);
+        setTimeout(function() {
+          body.SetPosition({ x : (width/2)/RATIO, y : (height/2)/RATIO });
+          var impulse = puckImpulse;
+          if (wall.get('player').get('name') === 'human') {
+            impulse = -impulse;
+          }
+          body.ApplyImpulse({x:0, y: impulse }, {
+            x : puck.get('x')/RATIO,
+            y : puck.get('y')/RATIO
+          });
+        }, 10);
+
+        if (score > 14) {
+          // TODO: end the game
+        }
+      });
+
+
       // TODO: refactor this into a trait
-      puck.get('body').GetBody().ApplyImpulse({x:0, y:0.06}, {
+      puck.get('body').GetBody().ApplyImpulse({x:0, y: puckImpulse}, {
         x : puck.get('x')/RATIO,
         y : puck.get('y')/RATIO
       });
@@ -189,7 +234,6 @@
             y : playerPaddle.get('y')/RATIO
           });
         }
-
 
         // TODO: this should not be on the render loop
         scene.tick();

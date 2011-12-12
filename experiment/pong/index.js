@@ -11,13 +11,16 @@ var b2MassData = Box2D.Collision.Shapes.b2MassData;
 var b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
 var b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
 var b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
-
+var b2ContactListener = Box2D.Dynamics.b2ContactListener;
+var b2Transform = Box2D.Common.Math.b2Transform
 
 var Player = Thing.class(['game.actor']);
 Player.prototype.link = function() {};
 
 var human = new Player();
+human.set('name', 'human');
 var ai = new Player();
+ai.set('name', 'ai');
 
 Thing.trait('game.renderable', ['game.solid'], function(proto) {
   proto.init.push(function(obj, options) {
@@ -208,8 +211,8 @@ var bottomw = new Wall({
   restitution : 0
 });
 
-ai.link(bottomw);
-human.link(topw);
+bottomw.set('player', ai);
+topw.set('player', human);
 
 Thing.trait('pong.puck', [
   'pong.physics.object',
@@ -286,29 +289,24 @@ var puck = Thing.create(['pong.puck'], {
   density : 1
 });
 
-var scoreboard = Thing.create('object', {
-  human : new Value(0, ['dom.binding'], {
-    el : document.getElementById('player-score')
-  }),
-  ai : new Value(0, ['dom.binding'], {
-    el :document.getElementById('ai-score')
-  })
+Thing.trait('dom.binding', function(proto) {
+  proto.init.push(function(obj, options) {
+    var el = obj.el = options.el;
+    console.log(el);
+    options.target.on(function(value) {
+      // TODO: don't hardcode zero padding
+      if (value < 10) {
+        value = "0" + value;
+      }
+      el.innerHTML = value;
+    });
+  });
 });
 
-human.link(scoreboard.reference('player'))
-ai.link(scoreboard.reference('ai'))
+var DOMValue = Thing.class(['dom.binding']);
 
 
-Thing.when(puck).collidesWith(bottomw, topw).then(function(wall) {
-  var score = wall.get('player').get('score') + 1;
-  wall.get('player').set('score', score);
-
-  if (score > 14) {
-    // TODO: end the game
-  }
-});
-
-Thing.trait(['pong.physics.world'], function(proto) {
+Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
   proto.init.push(function(obj, options) {
     options.gravity = options.gravity || { x : 0, y : 0};
     var gravity = new b2Vec2(options.gravity.x || 0, options.gravity.y || 0);
@@ -316,26 +314,101 @@ Thing.trait(['pong.physics.world'], function(proto) {
     // TODO: externalize gravity with Thing.Value
 
     obj.set('world', new b2World(gravity, true));
-    if (obj._store.children) {
-      obj._store.children.on(function(node) {
+    if (obj.get('children')) {
+      obj.ref('children').on(function(node) {
         obj.addBody(node);
       })
     }
 
     var debugDraw = new Box2D.Dynamics.b2DebugDraw;
-    console.log(debugDraw);
+
     debugDraw.SetSprite(ctx);
     debugDraw.SetDrawScale(RATIO);
     debugDraw.SetFillAlpha(0.4);
     debugDraw.SetLineThickness(5.0);
-
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+
     obj.get('world').SetDebugDraw(debugDraw);
+    obj.set('contactListener', new b2ContactListener());
+
+    obj.set('contacts', Thing.createCollection([]));
+
+    obj.get('contactListener').BeginContact = function(contact) {
+      obj.ref('contacts').add({
+        a : contact.GetFixtureA().GetBody().thing,
+        b : contact.GetFixtureB().GetBody().thing
+      });
+    };
+
+    obj.get('contactListener').EndContact = function(contact) {
+      var thingA = contact.GetFixtureA().GetBody().thing,
+          thingB = contact.GetFixtureB().GetBody().thing;
+      obj.ref('contacts').filter(function(item) {
+        if (item.a === thingA && item.b === thingB) {
+          return false;
+        }
+        return true;
+      });
+    };
+
+    obj.get('world').SetContactListener(obj.get('contactListener'));
+    obj.set('collisionActions', Thing.createCollection([]));
+
+    obj.ref('contacts').on(function() {
+      obj.ref('collisionActions').each(function(action) {
+        action.test(obj.get('contacts'));
+      });
+    });
+
+
+    obj.get('whenActions').prototype.init.push(function(actions) {
+
+      obj.ref('collisionActions').add(actions);
+      actions.addStep('collidesWith', function() {
+        var args = Array.prototype.slice.call(arguments,0);
+
+        var
+        current = args.length,
+        source = actions.get('source'),
+        sourceId = source.meta('id').value,
+        cache = {};
+
+        while (current--) {
+          cache[args[current].meta('id').value] = true;
+        }
+
+        actions.ref('conditions').add(function() {
+          var found = false;
+          obj.ref('contacts').each(function(contact) {
+            if (contact.handled) { return; }
+
+            if (contact.a === source &&
+                cache[contact.b.meta('id').value] === true)
+            {
+              found = contact.b;
+
+            } else if (contact.b === source &&
+                       cache[contact.a.meta('id').value] === true)
+            {
+              found = contact.a;
+            }
+            contact.handled = true;
+            if (found) {
+              return false;
+            }
+          });
+          console.log(found);
+          return found;
+        });
+      });
+    });
   });
 
   proto.tick = function() {
     this.get('world').Step(1/60, 10, 10);
-    //this.get('world').DrawDebugData();
+    if (this.get('debug.physics')) {
+      this.get('world').DrawDebugData();
+    }
   };
 
   proto.addBody = function(node) {
@@ -351,6 +424,8 @@ Thing.trait(['pong.physics.world'], function(proto) {
     bodyDef.position.Set(node.get('x')/RATIO, node.get('y')/RATIO);
     var body = this.get('world').CreateBody(bodyDef).CreateFixture(fixDef);
     body.GetBody().SetAngle(0);
+    body.GetBody().thing = node; // backref on the fixture
     node.set('body', body);
+
   };
 });
