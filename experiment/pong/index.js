@@ -15,7 +15,7 @@ var b2ContactListener = Box2D.Dynamics.b2ContactListener;
 var b2Transform = Box2D.Common.Math.b2Transform
 
 var Player = Thing.class(['game.actor']);
-Player.prototype.link = function() {};
+
 
 var human = new Player();
 human.set('name', 'human');
@@ -117,7 +117,7 @@ var Paddle = Thing.class(['game.solid.rectangular', 'object.physics.static']);
 
 var aiPaddle = new Paddle({
   y : Thing.constant(1),
-  x : 150,
+  x : 190,
   width : Thing.constant(80),
   height: Thing.constant(5),
   color : '#ff0000',
@@ -126,11 +126,11 @@ var aiPaddle = new Paddle({
   friction : 1000
 });
 
-human.link(playerPaddle);
+human.set('paddle', playerPaddle);
 
 var playerPaddle = new Paddle({
   y: Thing.constant(597),
-  x : 150,
+  x : 190,
   width : Thing.constant(80),
   height: Thing.constant(5),
   color : 'blue',
@@ -139,7 +139,7 @@ var playerPaddle = new Paddle({
   friction : 1000
 });
 
-ai.link(aiPaddle);
+ai.set('paddle', aiPaddle);
 
 Thing.trait('pong.physics.object', ['game.solid', 'game.box2d.node'], function(proto) {
   proto.collidesWith = function() {
@@ -288,6 +288,31 @@ var puck = Thing.create(['pong.puck'], {
   restitution : 1.01,
   density : 1
 });
+
+// TODO: this should live inside of the ai player
+var updateAI = function() {
+  var
+  puckX = puck.get('x'),
+  puckY = puck.get('y'),
+  aiX   = aiPaddle.get('x'),
+  aiY   = aiPaddle.get('y'),
+  impulse = 0.1;
+
+
+  if (puckX < aiX) {
+    impulse = -impulse;
+  }
+
+  aiPaddle.get('body').GetBody().ApplyImpulse({x: impulse, y: 0 }, {
+    x : aiPaddle.get('x')/RATIO,
+    y : aiPaddle.get('y')/RATIO
+  });
+
+
+};
+puck.ref('x').on(updateAI);
+puck.ref('y').on(updateAI);
+
 
 Thing.trait('dom.binding', function(proto) {
   proto.init.push(function(obj, options) {
