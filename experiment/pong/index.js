@@ -355,7 +355,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
 
     debugDraw.SetSprite(ctx);
     debugDraw.SetDrawScale(RATIO);
-    debugDraw.SetFillAlpha(0.1);
+    debugDraw.SetFillAlpha(0.4);
     debugDraw.SetLineThickness(5.0);
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
 
@@ -436,9 +436,9 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
 
   proto.tick = function() {
     this.get('world').Step(1/60, 10, 10);
-    //if (this.get('debug.physics')) {
+    if (this.get('debug.physics')) {
       this.get('world').DrawDebugData();
-    //}
+    }
   };
 
   proto.addBody = function(node) {
