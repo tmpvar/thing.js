@@ -177,8 +177,9 @@ var topw = new Wall({
   width : Thing.constant(400),
   height : Thing.constant(10),
   color : wallcolor,
-  density : 1000000,
-  restitution : 0
+  density : 100000000,
+  restitution : 0,
+  friction: 0
 });
 
 var leftw = new Wall({
@@ -187,8 +188,9 @@ var leftw = new Wall({
   width : Thing.constant(10),
   height : Thing.constant(599),
   color : wallcolor,
-  density : 1000000,
-  restitution : 0
+  density : 100000000,
+  restitution : 0,
+  friction: 0
 });
 
 var rightw = new Wall({
@@ -197,8 +199,9 @@ var rightw = new Wall({
   width : Thing.constant(10),
   height : Thing.constant(599),
   color : wallcolor,
-  density : 1000000,
-  restitution : 0
+  density : 100000000,
+  restitution : 0,
+  friction: 0
 });
 
 var bottomw = new Wall({
@@ -207,8 +210,9 @@ var bottomw = new Wall({
   width : Thing.constant(400),
   height : Thing.constant(10),
   color : wallcolor,
-  density : 1000000,
-  restitution : 0
+  density : 100000000,
+  restitution : 0,
+  friction: 0
 });
 
 bottomw.set('player', ai);
@@ -284,9 +288,9 @@ var puck = Thing.create(['pong.puck'], {
     // TODO: reset the puck to 0 and randomly choose a direction
   },
   color : '#28D371',
-  friction : 10,
-  restitution : 1.01,
-  density : 1
+  friction : 1,
+  restitution : 1,
+  density : 0
 });
 
 // TODO: this should live inside of the ai player
@@ -296,7 +300,7 @@ var updateAI = function() {
   puckY = puck.get('y'),
   aiX   = aiPaddle.get('x'),
   aiY   = aiPaddle.get('y'),
-  impulse = 0.1;
+  impulse = 0.3;
 
 
   if (puckX < aiX) {
@@ -313,7 +317,6 @@ var updateAI = function() {
 
 };
 puck.ref('x').on(updateAI);
-puck.ref('y').on(updateAI);
 
 
 Thing.trait('dom.binding', function(proto) {
@@ -430,7 +433,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
   });
 
   proto.tick = function() {
-    this.get('world').Step(1/60, 50, 50);
+    this.get('world').Step(1/60, 10, 10);
     if (this.get('debug.physics')) {
       this.get('world').DrawDebugData();
     }
