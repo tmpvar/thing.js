@@ -1,6 +1,6 @@
 var when = Thing.when;
 var Value = Thing.Value;
-var RATIO = 100;
+var RATIO = 200;
 var b2Vec2 = Box2D.Common.Math.b2Vec2;
 var b2BodyDef = Box2D.Dynamics.b2BodyDef;
 var b2Body = Box2D.Dynamics.b2Body;
@@ -116,27 +116,27 @@ Thing.trait('object.physics.static', function(proto) {
 var Paddle = Thing.class(['game.solid.rectangular', 'object.physics.static']);
 
 var aiPaddle = new Paddle({
-  y : Thing.constant(1),
+  y : Thing.constant(6),
   x : 190,
   width : Thing.constant(80),
-  height: Thing.constant(5),
+  height: Thing.constant(10),
   color : '#ff0000',
   density : 10,
   restitution: 0,
-  friction : 1000
+  friction : 10
 });
 
 human.set('paddle', playerPaddle);
 
 var playerPaddle = new Paddle({
-  y: Thing.constant(597),
+  y: Thing.constant(594),
   x : 190,
   width : Thing.constant(80),
-  height: Thing.constant(5),
+  height: Thing.constant(10),
   color : 'blue',
   density : 10,
   restitution: 0,
-  friction : 1000
+  friction : 10
 });
 
 ai.set('paddle', aiPaddle);
@@ -177,7 +177,7 @@ var topw = new Wall({
   width : Thing.constant(400),
   height : Thing.constant(10),
   color : wallcolor,
-  density : 100000000,
+  density : 1000000,
   restitution : 0
 });
 
@@ -197,7 +197,7 @@ var rightw = new Wall({
   width : Thing.constant(10),
   height : Thing.constant(599),
   color : wallcolor,
-  density : 10000000,
+  density : 1000000,
   restitution : 0
 });
 
@@ -207,7 +207,7 @@ var bottomw = new Wall({
   width : Thing.constant(400),
   height : Thing.constant(10),
   color : wallcolor,
-  density : 1000000000,
+  density : 1000000,
   restitution : 0
 });
 
@@ -284,7 +284,7 @@ var puck = Thing.create(['pong.puck'], {
     // TODO: reset the puck to 0 and randomly choose a direction
   },
   color : '#28D371',
-  friction : 1000,
+  friction : 10,
   restitution : 1.01,
   density : 1
 });
@@ -301,6 +301,8 @@ var updateAI = function() {
 
   if (puckX < aiX) {
     impulse = -impulse;
+  } else if (puckX === aiX) {
+    impulse = 0;
   }
 
   aiPaddle.get('body').GetBody().ApplyImpulse({x: impulse, y: 0 }, {
@@ -317,7 +319,6 @@ puck.ref('y').on(updateAI);
 Thing.trait('dom.binding', function(proto) {
   proto.init.push(function(obj, options) {
     var el = obj.el = options.el;
-    console.log(el);
     options.target.on(function(value) {
       // TODO: don't hardcode zero padding
       if (value < 10) {
@@ -422,7 +423,6 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
               return false;
             }
           });
-          console.log(found);
           return found;
         });
       });
@@ -430,7 +430,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
   });
 
   proto.tick = function() {
-    this.get('world').Step(1/60, 10, 10);
+    this.get('world').Step(1/60, 50, 50);
     if (this.get('debug.physics')) {
       this.get('world').DrawDebugData();
     }

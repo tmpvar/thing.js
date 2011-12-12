@@ -116,12 +116,12 @@
       var canvas = document.getElementById('scene');
       var width = 400;
       var height = 600;
-      var puckImpulse = 0.06;
+      var puckImpulse = 0.009;
       var ctx = window.ctx = canvas.getContext('2d');
       var nextTick = (window.requestAnimationFrame) ?
                       window.requestAnimationFrame  :
                       function(fn) {
-                        setTimeout(fn, 1000/60);
+                        setTimeout(fn, 1000/40);
                       };
 
       var scene = window.scene = Thing.create(['game.scene', 'pong.physics.world'], {
@@ -167,12 +167,10 @@
         wall.get('player').set('score', score);
 
         var body = puck.get('body').GetBody();
-        body.SetAwake(false);
-        body.ResetMassData();
-
-        body.SetLinearVelocity({ x : 0, y : 0 });
-        body.SetAngularVelocity(0);
         setTimeout(function() {
+          body.ResetMassData();
+          body.SetLinearVelocity({ x : 0, y : 0 });
+          body.SetAngularVelocity(0);
           body.SetPosition({ x : (width/2)/RATIO, y : (height/2)/RATIO });
           var impulse = puckImpulse;
           if (wall.get('player').get('name') === 'human') {
@@ -213,7 +211,7 @@
         ctx.fillRect(0, 0, width, height);
 
         // TODO: this should not be in the render loop
-        var impulse = 5;
+        var impulse = 1;
 
         if (keys[39]) { // right arrow
             playerPaddle.get('body').GetBody().ApplyImpulse({
