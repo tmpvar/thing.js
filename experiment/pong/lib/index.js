@@ -305,7 +305,7 @@ var updateAI = function() {
   puckY = puck.get('y'),
   aiX   = aiPaddle.get('x'),
   aiY   = aiPaddle.get('y'),
-  impulse = 100;
+  impulse = 40;
 
 
   if (puckX < aiX) {
@@ -314,7 +314,7 @@ var updateAI = function() {
     impulse = 0;
   }
 
-  impulse = (Math.abs(puckX-aiX)/400) * impulse * (1-Math.abs(puckY-aiY)/600);
+  impulse = (Math.abs(puckX-aiX)/400) * impulse * (1-(Math.abs(puckY-aiY)/1200));
 
   aiPaddle.get('body').GetBody().ApplyImpulse({x: impulse, y: 0 }, {
     x : aiPaddle.get('x')/RATIO,
