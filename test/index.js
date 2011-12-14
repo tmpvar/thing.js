@@ -50,16 +50,47 @@ var tests = {
     t.done()
   },
 
+  'init list should be unique to classes of objects' : function(t) {
+    Thing.trait('first', function(proto) {
+      proto.init(function() {
+        this.first = true;
+      });
+    });
+
+    Thing.trait('second', function(proto) {
+      proto.init(function() {
+        this.second = true;
+      });
+    });
+
+    var Both = Thing.class(['first', 'second']);
+    var First = Thing.class(['first']);
+    var Second = Thing.class(['second']);
+
+    var both = new Both();
+    t.ok(both.first && both.second, 'should contain both first and second properties');
+
+    var first = new First();
+    t.ok(first.first, 'first has first');
+    t.ok(!first.second, 'first does not have second');
+
+    var second = new Second();
+    t.ok(!second.first, 'second does not have first');
+    t.ok(second.second, 'second has second');
+    t.done();
+
+  },
+
   'thing initialization' : function(t) {
     Thing.trait('trait1', function(proto) {
-      proto.init.push(function(obj, options) {
-        obj.options = options
+      proto.init(function(options) {
+        this.options = options
       });
     });
 
     Thing.trait('trait2', function(proto) {
-      proto.init.push(function(obj, options) {
-        obj.b = true;
+      proto.init(function(options) {
+        this.b = true;
       });
     });
 

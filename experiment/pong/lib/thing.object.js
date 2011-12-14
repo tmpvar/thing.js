@@ -14,8 +14,8 @@ Thing.createReference = function(context, key, value) {
 }
 
 Thing.trait('object', function(proto) {
-  proto.init.push(function(obj) {
-    obj._store = {};
+  proto.init(function(options) {
+    this._store = {};
   });
 
   proto.set = function set(k, v) {
@@ -61,13 +61,13 @@ Thing.trait('object', function(proto) {
 
 
 Thing.trait('object.value', function(proto) {
-  proto.init.push(function(obj, options) {
-    obj._observers = [];
-    obj.current = options
+  proto.init(function(options) {
+    this._observers = [];
+    this.current = options
 
     if (options && options.update) {
-      obj.update = options.update;
-      obj.update();
+      this.update = options.update;
+      this.update();
     }
   });
 
@@ -76,8 +76,18 @@ Thing.trait('object.value', function(proto) {
   };
 
   proto.notify = function(value) {
-    for (var i=0, l=this._observers.length; i<l; i++) {
-      this._observers[i](value);
+    // There is potential here where observers are setup
+    // after default values if that is the case, then
+    // wait until the next tick before notifying them.
+    if (!this._observers) {
+      var that = this;
+      setTimeout(function() {
+        that.notify(value);
+      }, 16);
+    } else {
+      for (var i=0, l=this._observers.length; i<l; i++) {
+        this._observers[i](value);
+      }
     }
   };
 
@@ -104,11 +114,11 @@ Thing.Value = Thing.class(['object.value']);
 
 Thing.trait('object.collection', ['object.value'], function(proto) {
 
-  proto.init.push(function(obj) {
-    obj.meta('contains', {});
+  proto.init(function(options) {
+    this.meta('contains', {});
   });
 
-  proto.add = function(obj) {
+  proto.add = function ObjectAdd(obj) {
     this.current.push(obj);
     if (obj && obj.meta) {
       this.meta('contains')[obj.meta('id')] = true;

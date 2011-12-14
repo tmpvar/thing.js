@@ -17,13 +17,13 @@ Thing.trait('getter setter', function(proto) {
 });
 
 Thing.trait('value.stream', function(proto) {
-  proto.init.push(function(obj, options) {
-    obj._observers = [];
-    obj.current = options.current || null
+  proto.init(function(options) {
+    this._observers = [];
+    this.current = options.current || null
 
     if (options.update) {
-      obj.update = options.update;
-      obj.update();
+      this.update = options.update;
+      this.update();
     }
   });
 
@@ -56,10 +56,10 @@ Thing.trait('value.stream', function(proto) {
 var Value = Thing.class(['value.stream']);
 
 Thing.trait('rectangle', ['getter setter'], function(proto) {
-  proto.init.push(function(obj) {
-    obj.set('width', new Value({ current : 0 }));
-    obj.set('height', new Value({ current : 0 }));
-    obj.set('area', new Value({
+  proto.init(function(options) {
+    this.set('width', new Value({ current : 0 }));
+    this.set('height', new Value({ current : 0 }));
+    this.set('area', new Value({
       update : function() {
         this.set(this.resolve(obj, 'width') * this.resolve(obj, 'height'));
       },

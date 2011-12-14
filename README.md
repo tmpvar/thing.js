@@ -9,9 +9,9 @@ Thing.trait('uid', function(proto) {
   var uid = 0;
 
   // add a function to be run when the object is created
-  proto.init.push(function(obj) {
+  proto.init(function(options) {
     uid += 1;
-    obj.meta('uid', uid, { freeze : true });
+    this.meta('uid', uid, { freeze : true });
   });
 });
 

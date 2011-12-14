@@ -23,9 +23,9 @@ var ai = new Player();
 ai.set('name', 'ai');
 
 Thing.trait('game.renderable', ['game.solid'], function(proto) {
-  proto.init.push(function(obj, options) {
-    obj.set('color', options.color || '#FF00FF');
-    obj.set('renderSteps', []);
+  proto.init(function(options) {
+    this.set('color', options.color || '#FF00FF');
+    this.set('renderSteps', []);
   });
 
   proto.beginRender = function(ctx) {
@@ -53,14 +53,15 @@ Thing.trait('game.renderable', ['game.solid'], function(proto) {
 });
 
 Thing.trait('game.solid.rectangular', ['game.renderable'], function(proto) {
-  proto.init.push(function(obj, options) {
-    obj.set('physicalShape', new b2PolygonShape);
-    obj.get('physicalShape').SetAsBox(
-      obj.get('width')/RATIO/2,
-      obj.get('height')/RATIO/2
+  proto.init(function(options) {
+    var that = this;
+    this.set('physicalShape', new b2PolygonShape);
+    this.get('physicalShape').SetAsBox(
+      this.get('width')/RATIO/2,
+      this.get('height')/RATIO/2
     );
 
-    obj.get('renderSteps').push(function(ctx) {
+    this.get('renderSteps').push(function(ctx) {
       ctx.fillStyle = this.get('color');
       ctx.fillRect(
         -(this.get('width')/2), // center on the x
@@ -73,11 +74,11 @@ Thing.trait('game.solid.rectangular', ['game.renderable'], function(proto) {
 });
 
 Thing.trait('game.solid.circular', ['game.renderable'], function(proto) {
-  proto.init.push(function(obj, options) {
-    obj.set('physicalShape', new b2CircleShape);
-    obj.get('physicalShape').SetRadius(obj.get('width')/RATIO/2);
+  proto.init(function(options) {
+    this.set('physicalShape', new b2CircleShape);
+    this.get('physicalShape').SetRadius(this.get('width')/RATIO/2);
 
-    obj.get('renderSteps').push(function(ctx) {
+    this.get('renderSteps').push(function(ctx) {
       ctx.fillStyle = this.get('color');
       ctx.beginPath();
       ctx.arc(
@@ -98,17 +99,19 @@ Thing.trait('game.solid.circular', ['game.renderable'], function(proto) {
 
 
 Thing.trait('object.physics.static', function(proto) {
-  proto.init.push(function(o, options) {
-    o.set('type', b2Body.b2_staticBody);
-    o.set('density', options.density || 1.0);
-    o.set('friction', options.friction || 0);
-    o.set('restitution', options.restitution || 0);
-    o.set('tick', 0);
-    o._store.tick.on(function() {
-      var pos = o.get('body').GetBody().GetPosition();
-      o.set('x', pos.x*RATIO);
-      o.set('y', pos.y*RATIO);
-      o.set('rotation', o.get('body').GetBody().GetAngle());
+  proto.init(function(options) {
+    this.set('type', b2Body.b2_staticBody);
+    this.set('density', options.density || 1.0);
+    this.set('friction', options.friction || 0);
+    this.set('restitution', options.restitution || 0);
+    this.set('tick', 0);
+
+    var that = this;
+    this._store.tick.on(function() {
+      var pos = that.get('body').GetBody().GetPosition();
+      that.set('x', pos.x*RATIO);
+      that.set('y', pos.y*RATIO);
+      that.set('rotation', that.get('body').GetBody().GetAngle());
     });
   });
 });
@@ -151,15 +154,17 @@ Thing.trait('pong.physics.object', ['game.solid', 'game.box2d.node'], function(p
 
 
 Thing.trait('object.physics.dynamic', function(proto) {
-  proto.init.push(function(o) {
-    o.set('type', b2Body.b2_dynamicBody);
-    o.set('density', 1);
-    o.set('tick', 0);
-    o._store.tick.on(function() {
-      var pos = o.get('body').GetBody().GetPosition();
-      o.set('x', pos.x*RATIO);
-      o.set('y', pos.y*RATIO);
-      o.set('rotation', o.get('body').GetBody().GetAngle());
+  proto.init(function(options) {
+    this.set('type', b2Body.b2_dynamicBody);
+    this.set('density', 1);
+    this.set('tick', 0);
+
+    var that = this;
+    this._store.tick.on(function() {
+      var pos = that.get('body').GetBody().GetPosition();
+      that.set('x', pos.x*RATIO);
+      that.set('y', pos.y*RATIO);
+      that.set('rotation', that.get('body').GetBody().GetAngle());
     });
   });
 });
@@ -224,8 +229,8 @@ Thing.trait('pong.puck', [
   'object.physics.static'
 ], function(proto) {
 
-  proto.init.push(function(obj, options) {
-    obj.get('renderSteps').push(function(ctx) {
+  proto.init(function(options) {
+    this.get('renderSteps').push(function(ctx) {
       ctx.fillStyle = this.get('color');
       ctx.beginPath();
       ctx.arc(
@@ -322,8 +327,8 @@ puck.ref('x').on(updateAI);
 
 
 Thing.trait('dom.binding', function(proto) {
-  proto.init.push(function(obj, options) {
-    var el = obj.el = options.el;
+  proto.init(function(options) {
+    var el = this.el = options.el;
     options.target.on(function(value) {
       // TODO: don't hardcode zero padding
       if (value < 10) {
@@ -338,17 +343,17 @@ var DOMValue = Thing.class(['dom.binding']);
 
 
 Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
-  proto.init.push(function(obj, options) {
+  proto.init(function(options) {
     options.gravity = options.gravity || { x : 0, y : 0};
     var gravity = new b2Vec2(options.gravity.x || 0, options.gravity.y || 0);
-
+    var that = this;
     // TODO: externalize gravity with Thing.Value
     Box2D.Common.b2Settings.b2_velocityThreshold = 0;
-    obj.set('world', new b2World(gravity, true));
-    if (obj.get('children')) {
-      obj.ref('children').on(function(node) {
-        obj.addBody(node);
-      })
+    this.set('world', new b2World(gravity, true));
+    if (this.get('children')) {
+      this.ref('children').on(function(node) {
+        that.addBody(node);
+      });
     }
 
     var debugDraw = new Box2D.Dynamics.b2DebugDraw;
@@ -359,22 +364,22 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
     debugDraw.SetLineThickness(5.0);
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
 
-    obj.get('world').SetDebugDraw(debugDraw);
-    obj.set('contactListener', new b2ContactListener());
+    this.get('world').SetDebugDraw(debugDraw);
+    this.set('contactListener', new b2ContactListener());
 
-    obj.set('contacts', Thing.createCollection([]));
+    this.set('contacts', Thing.createCollection([]));
 
-    obj.get('contactListener').BeginContact = function(contact) {
-      obj.ref('contacts').add({
+    this.get('contactListener').BeginContact = function(contact) {
+      that.ref('contacts').add({
         a : contact.GetFixtureA().GetBody().thing,
         b : contact.GetFixtureB().GetBody().thing
       });
     };
 
-    obj.get('contactListener').EndContact = function(contact) {
+    this.get('contactListener').EndContact = function(contact) {
       var thingA = contact.GetFixtureA().GetBody().thing,
           thingB = contact.GetFixtureB().GetBody().thing;
-      obj.ref('contacts').filter(function(item) {
+      that.ref('contacts').filter(function(item) {
         if (item.a === thingA && item.b === thingB) {
           return false;
         }
@@ -382,19 +387,19 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
       });
     };
 
-    obj.get('world').SetContactListener(obj.get('contactListener'));
-    obj.set('collisionActions', Thing.createCollection([]));
+    this.get('world').SetContactListener(this.get('contactListener'));
+    this.set('collisionActions', Thing.createCollection([]));
 
-    obj.ref('contacts').on(function() {
-      obj.ref('collisionActions').each(function(action) {
-        action.test(obj.get('contacts'));
+    this.ref('contacts').on(function() {
+      that.ref('collisionActions').each(function(action) {
+        action.test(that.get('contacts'));
       });
     });
 
 
-    obj.get('whenActions').prototype.init.push(function(actions) {
-
-      obj.ref('collisionActions').add(actions);
+    this.get('whenActions').prototype.init(function(actions) {
+      var actions = this;
+      that.ref('collisionActions').add(actions);
       actions.addStep('collidesWith', function() {
         var args = Array.prototype.slice.call(arguments,0);
 
@@ -410,7 +415,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
 
         actions.ref('conditions').add(function() {
           var found = false;
-          obj.ref('contacts').each(function(contact) {
+          that.ref('contacts').each(function(contact) {
             if (contact.handled) { return; }
 
             if (contact.a === source &&

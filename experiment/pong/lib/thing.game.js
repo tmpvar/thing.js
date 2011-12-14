@@ -1,16 +1,21 @@
 (function() {
   var Value = Thing.Value;
 
+  Thing.trait('game', ['object.collection'], function() {
+
+  });
+
   Thing.trait('game.node', ['object'], function(proto) {
-    proto.init.push(function(obj, options) {
-      obj.set('x', Thing.wrap(options.x || 0));
-      obj.set('y', Thing.wrap(options.y || 0));
-      obj.set('parent', Thing.wrap(options.parent || null));
+    proto.init(function(options) {
+      this.set('x', Thing.wrap(options.x || 0));
+      this.set('y', Thing.wrap(options.y || 0));
+      this.set('parent', Thing.wrap(options.parent || null));
       // TODO: create an array value
-      obj.set('children', Thing.createCollection(options.children || []));
+      this.set('children', Thing.createCollection(options.children || []));
     });
 
-    proto.add = function(node) {
+    proto.add = function SceneAdd(node) {
+      console.log('scene add')
       this.ref('children').add(node);
     };
 
@@ -18,15 +23,15 @@
 
 
   Thing.trait('game.solid', ['game.node'], function(proto) {
-    proto.init.push(function(obj, options) {
-      obj.set('width', Thing.wrap(options.width || 0));
-      obj.set('height', Thing.wrap(options.height || 0));
+    proto.init(function(options) {
+      this.set('width', Thing.wrap(options.width || 0));
+      this.set('height', Thing.wrap(options.height || 0));
     });
   });
 
   Thing.trait('game.actor', ['object'], function(proto) {
-    proto.init.push(function(obj) {
-      obj.set('score', 0);
+    proto.init(function(options) {
+      this.set('score', 0);
     })
   });
 
@@ -39,9 +44,9 @@
   });
 
   Thing.trait(['logic.chain'], function(proto) {
-    proto.init.push(function(obj) {
-      obj.set('conditions', Thing.createCollection([]));
-      obj.set('reaction', Thing.createCollection([]));
+    proto.init(function(options) {
+      this.set('conditions', Thing.createCollection([]));
+      this.set('reaction', Thing.createCollection([]));
     });
 
     proto.addStep = function(name, fn) {
@@ -80,10 +85,10 @@
   });
 
   Thing.trait('game.scene', ['game.node'], function(proto) {
-    proto.init.push(function(obj, options) {
+    proto.init(function(options) {
       // TODO: allow the logic chain instance to be extended
       //       via options
-      obj.set('whenActions', Thing.class(['object', 'logic.chain']));
+      this.set('whenActions', Thing.class(['object', 'logic.chain']));
     });
 
     proto.render = function(ctx) {
