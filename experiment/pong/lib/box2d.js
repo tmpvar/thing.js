@@ -1399,11 +1399,10 @@ Box2D.postDefs = [];
             output.pointB.y -= rB * normal.y;
          }
          else {
-            p = new b2Vec2();
-            p.x = .5 * (output.pointA.x + output.pointB.x);
-            p.y = .5 * (output.pointA.y + output.pointB.y);
-            output.pointA.x = output.pointB.x = p.x;
-            output.pointA.y = output.pointB.y = p.y;
+            var x = .5 * (output.pointA.x + output.pointB.x);
+            var y = .5 * (output.pointA.y + output.pointB.y);
+            output.pointA.x = output.pointB.x = x;
+            output.pointA.y = output.pointB.y = y;
             output.distance = 0.0;
          }
       }
@@ -3473,9 +3472,9 @@ Box2D.postDefs = [];
    }
    b2PolygonShape.prototype.Reserve = function (count) {
       if (count === undefined) count = 0;
-      for (var i = parseInt(this.m_vertices.length); i < count; i++) {
-         this.m_vertices[i] = new b2Vec2();
-         this.m_normals[i] = new b2Vec2();
+      while (count--) {
+         this.m_vertices[count] = new b2Vec2();
+         this.m_normals[count] = new b2Vec2();
       }
    }
    b2PolygonShape.ComputeCentroid = function (vs, count) {
@@ -3503,10 +3502,9 @@ Box2D.postDefs = [];
    }
    b2PolygonShape.ComputeOBB = function (obb, vs, count) {
       if (count === undefined) count = 0;
-      var i = 0;
+      var i = count;
       var p = new Vector(count + 1);
-      for (i = 0;
-      i < count; ++i) {
+      while(i--) {
          p[i] = vs[i];
       }
       p[count] = p[0];
@@ -4776,10 +4774,11 @@ Box2D.postDefs = [];
    }
    b2Body.prototype.GetLinearVelocityFromLocalPoint = function (localPoint) {
       var A = this.m_xf.R;
-      var worldPoint = new b2Vec2(A.col1.x * localPoint.x + A.col2.x * localPoint.y, A.col1.y * localPoint.x + A.col2.y * localPoint.y);
-      worldPoint.x += this.m_xf.position.x;
-      worldPoint.y += this.m_xf.position.y;
-      return new b2Vec2(this.m_linearVelocity.x - this.m_angularVelocity * (worldPoint.y - this.m_sweep.c.y), this.m_linearVelocity.y + this.m_angularVelocity * (worldPoint.x - this.m_sweep.c.x));
+      var worldPointX = A.col1.x * localPoint.x + A.col2.x * localPoint.y
+      var worldPoinyY = A.col1.y * localPoint.x + A.col2.y * localPoint.y;
+      worldPointX += this.m_xf.position.x;
+      worldPointY += this.m_xf.position.y;
+      return new b2Vec2(this.m_linearVelocity.x - this.m_angularVelocity * (worldPointY - this.m_sweep.c.y), this.m_linearVelocity.y + this.m_angularVelocity * (worldPointX - this.m_sweep.c.x));
    }
    b2Body.prototype.GetLinearDamping = function () {
       return this.m_linearDamping;
@@ -5458,7 +5457,7 @@ Box2D.postDefs = [];
       if (bodyCapacity === undefined) bodyCapacity = 0;
       if (contactCapacity === undefined) contactCapacity = 0;
       if (jointCapacity === undefined) jointCapacity = 0;
-      var i = 0;
+
       this.m_bodyCapacity = bodyCapacity;
       this.m_contactCapacity = contactCapacity;
       this.m_jointCapacity = jointCapacity;
@@ -5468,15 +5467,21 @@ Box2D.postDefs = [];
       this.m_allocator = allocator;
       this.m_listener = listener;
       this.m_contactSolver = contactSolver;
-      for (i = this.m_bodies.length;
-      i < bodyCapacity; i++)
-      this.m_bodies[i] = null;
-      for (i = this.m_contacts.length;
-      i < contactCapacity; i++)
-      this.m_contacts[i] = null;
-      for (i = this.m_joints.length;
-      i < jointCapacity; i++)
-      this.m_joints[i] = null;
+
+      var bodies = this.m_bodies;
+      while(bodyCapacity--) {
+        bodies[i] = null;
+      }
+
+      var contacts = this.m_contacts;
+      while(contactCapacity--) {
+        contacts[i] = null;
+      }
+
+      var joints = this.m_joints;
+      while(jointCapacity--) {
+        joints[i] = null;
+      }
    }
    b2Island.prototype.Clear = function () {
       this.m_bodyCount = 0;

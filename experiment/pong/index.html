@@ -7,6 +7,7 @@
   <script type="text/javascript" src="lib/thing.object.js"></script>
   <script type="text/javascript" src="lib/thing.game.js"></script>
   <script type="text/javascript" src="lib/index.js"></script>
+  <script type="text/javascript" src="lib/stats.js"></script>
   <style type="text/css">
 
     @font-face {
@@ -118,11 +119,6 @@
       var height = 600;
       var puckImpulse = 0.019;
       var ctx = window.ctx = canvas.getContext('2d');
-      var nextTick = (window.requestAnimationFrame) ?
-                      window.requestAnimationFrame  :
-                      function(fn) {
-                        setTimeout(fn, 1000/40);
-                      };
 
       var scene = window.scene = Thing.create(['game.scene', 'pong.physics.world'], {
         gravity : { y : 0, x : 0}
@@ -236,7 +232,7 @@
         // TODO: this should not be on the render loop
         scene.tick();
         scene.render(ctx);
-        nextTick(render);
+        requestAnimFrame(render);
       };
 
       render();
@@ -247,6 +243,20 @@
       document.addEventListener('keyup', function(e) {
         keys[e.keyCode] = false;
       });
+
+
+      var stats = new Stats();
+
+      // Align top-left
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.left = '0px';
+      stats.domElement.style.top = '0px';
+
+      document.body.appendChild( stats.domElement );
+
+      setInterval( function () {
+          stats.update();
+      }, 1000 / 60 );
 
     });
   </script>
