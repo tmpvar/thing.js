@@ -114,6 +114,16 @@
 
   <script type="text/javascript">
     domready(function() {
+
+      var stats = new Stats();
+
+      // Align top-left
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.left = '0px';
+      stats.domElement.style.top = '0px';
+
+      document.body.appendChild( stats.domElement );
+
       var canvas = document.getElementById('scene');
       var width = 400;
       var height = 600;
@@ -232,6 +242,7 @@
         // TODO: this should not be on the render loop
         scene.tick();
         scene.render(ctx);
+        stats.update();
         requestAnimFrame(render);
       };
 
@@ -239,25 +250,10 @@
 
       document.addEventListener('keydown', function(e) {
         keys[e.keyCode] = true;
-      });
+      }, true);
       document.addEventListener('keyup', function(e) {
         keys[e.keyCode] = false;
-      });
-
-
-      var stats = new Stats();
-
-      // Align top-left
-      stats.domElement.style.position = 'absolute';
-      stats.domElement.style.left = '0px';
-      stats.domElement.style.top = '0px';
-
-      document.body.appendChild( stats.domElement );
-
-      setInterval( function () {
-          stats.update();
-      }, 1000 / 60 );
-
+      }, true);
     });
   </script>
 </body>

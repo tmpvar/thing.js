@@ -440,7 +440,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
   });
 
   proto.tick = function() {
-    this.get('world').Step(1/60, 10, 10);
+    this.get('world').Step(1/60, 1, 1);
     if (this.get('debug.physics')) {
       this.get('world').DrawDebugData();
     }
