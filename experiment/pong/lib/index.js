@@ -61,13 +61,25 @@ Thing.trait('game.solid.rectangular', ['game.renderable'], function(proto) {
       this.get('height')/RATIO/2
     );
 
+    var w=this.get('width'), h=this.get('height'), whalf=w/2, hhalf=h/2, colorRef = this.ref('color');
+
+    this.ref('width').on(function(v) {
+      w = v;
+      whalf = Math.round(v/2);
+    });
+
+    this.ref('height').on(function(v) {
+      h = v;
+      hhalf = Math.round(v/2);
+    });
+
     this.get('renderSteps').push(function(ctx) {
-      ctx.fillStyle = this.get('color');
+      ctx.fillStyle = colorRef.current;
       ctx.fillRect(
-        -(this.get('width')/2), // center on the x
-        -(this.get('height')/2), // center on the y
-        this.get('width'),
-        this.get('height')
+        -(whalf), // center on the x
+        -(hhalf), // center on the y
+        w,
+        h
       );
     });
   });
@@ -78,15 +90,23 @@ Thing.trait('game.solid.circular', ['game.renderable'], function(proto) {
     this.set('physicalShape', new b2CircleShape);
     this.get('physicalShape').SetRadius(this.get('width')/RATIO/2);
 
+    var w = this.get('width');
+    var whalf = this.get('width')/2;
+    this.ref('width').on(function(v) {
+      w = v;
+      whalf = Math.round(v/2);
+    });
+    var PI2 = Math.PI*2;
+
     this.get('renderSteps').push(function(ctx) {
       ctx.fillStyle = this.get('color');
       ctx.beginPath();
       ctx.arc(
         0, // center on the x
         0, // center on the y
-        this.get('width')/2,
+        whalf,
         0,
-        Math.PI*2,
+        PI2,
         true
       );
 
@@ -144,7 +164,7 @@ var playerPaddle = new Paddle({
 
 ai.set('paddle', aiPaddle);
 
-Thing.trait('pong.physics.object', ['game.solid', 'game.box2d.node'], function(proto) {
+Thing.trait('pong.physics.object', ['game.solid'], function(proto) {
   proto.collidesWith = function() {
     return {
       then : function() {}
@@ -227,64 +247,10 @@ Thing.trait('pong.puck', [
   'pong.physics.object',
   'game.solid.circular',
   'object.physics.static'
-], function(proto) {
-
-  proto.init(function(options) {
-    this.get('renderSteps').push(function(ctx) {
-      ctx.fillStyle = this.get('color');
-      ctx.beginPath();
-      ctx.arc(
-        0, // center on the x
-        0, // center on the y
-        this.get('width')/2,
-        0,
-        Math.PI*2,
-        true
-      );
+]);
 
 
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      ctx.beginPath();
-      ctx.arc(
-        0, // center on the x
-        0, // center on the y
-        (this.get('width')/2)*.75,
-        0,
-        Math.PI*2,
-        true
-      );
-
-
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.save();
-        ctx.rotate(-this.get('rotation') || 0);
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.beginPath();
-        ctx.arc(
-          2, // center on the x
-          2, // center on the y
-          (this.get('width')/2)*1.05,
-          0,
-          Math.PI*2,
-          true
-        );
-
-
-        ctx.closePath();
-        ctx.fill();
-      ctx.restore();
-    });
-  });
-
-});
-
-
-var puck = Thing.create(['pong.puck'], {
+var puckOptions = {
   x : 200,
   y : 250,
   width : 20,
@@ -295,8 +261,13 @@ var puck = Thing.create(['pong.puck'], {
   color : '#28D371',
   friction : 1,
   restitution : 1.001,
-  density : 0
-});
+  density : 1
+};
+var Puck = Thing.class(['pong.puck']);
+
+var puck = new Puck(puckOptions);
+
+
 
 // TODO: this should live inside of the ai player
 var updateAI = function() {
@@ -440,7 +411,7 @@ Thing.trait('pong.physics.world', ['game.scene'], function(proto) {
   });
 
   proto.tick = function() {
-    this.get('world').Step(1/60, 1, 1);
+    this.get('world').Step(1/60, 10, 10);
     if (this.get('debug.physics')) {
       this.get('world').DrawDebugData();
     }

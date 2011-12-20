@@ -13,14 +13,6 @@
             };
   })();
 
-  Thing.nextTick = function(fn) {
-
-  }
-
-  Thing.trait('game', ['object.collection'], function() {
-
-  });
-
   Thing.trait('game.node', ['object'], function(proto) {
     proto.init(function(options) {
       this.set('x', Thing.wrap(options.x || 0));
@@ -31,10 +23,8 @@
     });
 
     proto.add = function SceneAdd(node) {
-      console.log('scene add')
       this.ref('children').add(node);
     };
-
   });
 
 
@@ -49,14 +39,6 @@
     proto.init(function(options) {
       this.set('score', 0);
     })
-  });
-
-  Thing.trait('game.box2d.node', ['game.solid'], function() {
-
-  });
-
-  Thing.trait('game.camera', ['object'], function() {
-
   });
 
   Thing.trait(['logic.chain'], function(proto) {

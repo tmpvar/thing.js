@@ -17,6 +17,10 @@
 */
 var Box2D = {};
 
+if (typeof module !== 'undefined') {
+  module.exports = Box2D;
+}
+
 (function (a2j, undefined) {
 
    if(!(Object.prototype.defineProperty instanceof Function)
@@ -79,8 +83,363 @@ if (typeof(Box2D.Dynamics) === "undefined") Box2D.Dynamics = {};
 if (typeof(Box2D.Dynamics.Contacts) === "undefined") Box2D.Dynamics.Contacts = {};
 if (typeof(Box2D.Dynamics.Controllers) === "undefined") Box2D.Dynamics.Controllers = {};
 if (typeof(Box2D.Dynamics.Joints) === "undefined") Box2D.Dynamics.Joints = {};
+
+function b2Math() {};
+Box2D.Common.Math.b2Math = b2Math;
+
+b2Math.IsValid = function (x) {
+  if (x === undefined) x = 0;
+  return isFinite(x);
+};
+b2Math.Dot = function (a, b) {
+  return a.x * b.x + a.y * b.y;
+};
+b2Math.CrossVV = function (a, b) {
+  return a.x * b.y - a.y * b.x;
+};
+b2Math.CrossVF = function (a, s) {
+  if (s === undefined) s = 0;
+  var v = new b2Vec2(s * a.y, (-s * a.x));
+  return v;
+};
+b2Math.CrossFV = function (s, a) {
+  if (s === undefined) s = 0;
+  var v = new b2Vec2((-s * a.y), s * a.x);
+  return v;
+};
+b2Math.MulMV = function (A, v) {
+  var u = new b2Vec2(A.col1.x * v.x + A.col2.x * v.y, A.col1.y * v.x + A.col2.y * v.y);
+  return u;
+};
+b2Math.MulTMV = function (A, v) {
+  var u = new b2Vec2(b2Math.Dot(v, A.col1), b2Math.Dot(v, A.col2));
+  return u;
+};
+b2Math.MulX = function (T, v) {
+  var a = b2Math.MulMV(T.R, v);
+  a.x += T.position.x;
+  a.y += T.position.y;
+  return a;
+};
+b2Math.MulXT = function (T, v) {
+  var a = b2Math.SubtractVV(v, T.position);
+  var tX = (a.x * T.R.col1.x + a.y * T.R.col1.y);
+  a.y = (a.x * T.R.col2.x + a.y * T.R.col2.y);
+  a.x = tX;
+  return a;
+};
+b2Math.AddVV = function (a, b) {
+  var v = new b2Vec2(a.x + b.x, a.y + b.y);
+  return v;
+};
+b2Math.SubtractVV = function (a, b) {
+  var v = new b2Vec2(a.x - b.x, a.y - b.y);
+  return v;
+};
+b2Math.Distance = function (a, b) {
+  var cX = a.x - b.x;
+  var cY = a.y - b.y;
+  return Math.sqrt(cX * cX + cY * cY);
+};
+b2Math.DistanceSquared = function (a, b) {
+  var cX = a.x - b.x;
+  var cY = a.y - b.y;
+  return (cX * cX + cY * cY);
+};
+b2Math.MulFV = function (s, a) {
+  if (s === undefined) s = 0;
+  var v = new b2Vec2(s * a.x, s * a.y);
+  return v;
+};
+b2Math.AddMM = function (A, B) {
+  var C = b2Mat22.FromVV(b2Math.AddVV(A.col1, B.col1), b2Math.AddVV(A.col2, B.col2));
+  return C;
+};
+b2Math.MulMM = function (A, B) {
+  var C = b2Mat22.FromVV(b2Math.MulMV(A, B.col1), b2Math.MulMV(A, B.col2));
+  return C;
+};
+b2Math.MulTMM = function (A, B) {
+  var c1 = new b2Vec2(b2Math.Dot(A.col1, B.col1), b2Math.Dot(A.col2, B.col1));
+  var c2 = new b2Vec2(b2Math.Dot(A.col1, B.col2), b2Math.Dot(A.col2, B.col2));
+  var C = b2Mat22.FromVV(c1, c2);
+  return C;
+};
+b2Math.Abs = function (a) {
+  if (a === undefined) a = 0;
+  return a > 0.0 ? a : (-a);
+};
+b2Math.AbsV = function (a) {
+  var b = new b2Vec2(b2Math.Abs(a.x), b2Math.Abs(a.y));
+  return b;
+};
+b2Math.AbsM = function (A) {
+  var B = b2Mat22.FromVV(b2Math.AbsV(A.col1), b2Math.AbsV(A.col2));
+  return B;
+};
+b2Math.Min = function (a, b) {
+  if (a === undefined) a = 0;
+  if (b === undefined) b = 0;
+  return a < b ? a : b;
+};
+b2Math.MinV = function (a, b) {
+  var c = new b2Vec2(b2Math.Min(a.x, b.x), b2Math.Min(a.y, b.y));
+  return c;
+};
+b2Math.Max = function (a, b) {
+  if (a === undefined) a = 0;
+  if (b === undefined) b = 0;
+  return a > b ? a : b;
+};
+b2Math.MaxV = function (a, b) {
+  var c = new b2Vec2(b2Math.Max(a.x, b.x), b2Math.Max(a.y, b.y));
+  return c;
+};
+b2Math.Clamp = function (a, low, high) {
+  if (a === undefined) a = 0;
+  if (low === undefined) low = 0;
+  if (high === undefined) high = 0;
+  return a < low ? low : a > high ? high : a;
+};
+b2Math.ClampV = function (a, low, high) {
+  return b2Math.MaxV(low, b2Math.MinV(a, high));
+};
+b2Math.Swap = function (a, b) {
+  var tmp = a[0];
+  a[0] = b[0];
+  b[0] = tmp;
+};
+b2Math.Random = function () {
+  return Math.random() * 2 - 1;
+};
+b2Math.RandomRange = function (lo, hi) {
+  if (lo === undefined) lo = 0;
+  if (hi === undefined) hi = 0;
+  var r = Math.random();
+  r = (hi - lo) * r + lo;
+  return r;
+};
+b2Math.NextPowerOfTwo = function (x) {
+  if (x === undefined) x = 0;
+  x |= (x >> 1) & 0x7FFFFFFF;
+  x |= (x >> 2) & 0x3FFFFFFF;
+  x |= (x >> 4) & 0x0FFFFFFF;
+  x |= (x >> 8) & 0x00FFFFFF;
+  x |= (x >> 16) & 0x0000FFFF;
+  return x + 1;
+};
+b2Math.IsPowerOfTwo = function (x) {
+  if (x === undefined) x = 0;
+  var result = x > 0 && (x & (x - 1)) == 0;
+  return result;
+};
+
+
+function b2Vec2(x, y) {
+   if (x) { this.x = x; }
+   if (y) { this.y = y; }
+}
+Box2D.Common.Math.b2Vec2 = b2Vec2;
+b2Vec2.prototype = {
+  x : 0,
+  y : 0
+};
+b2Vec2.prototype.SetZero = function () {
+   this.x = 0.0;
+   this.y = 0.0;
+}
+b2Vec2.prototype.Set = function (x_, y_) {
+   if (x_ === undefined) x_ = 0;
+   if (y_ === undefined) y_ = 0;
+   this.x = x_;
+   this.y = y_;
+}
+b2Vec2.prototype.SetV = function (v) {
+   this.x = v.x;
+   this.y = v.y;
+}
+b2Vec2.prototype.GetNegative = function () {
+   return new b2Vec2((-this.x), (-this.y));
+}
+b2Vec2.prototype.NegativeSelf = function () {
+   this.x = (-this.x);
+   this.y = (-this.y);
+}
+b2Vec2.Make = function (x_, y_) {
+   if (x_ === undefined) x_ = 0;
+   if (y_ === undefined) y_ = 0;
+   return new b2Vec2(x_, y_);
+}
+b2Vec2.prototype.Copy = function () {
+   return new b2Vec2(this.x, this.y);
+}
+b2Vec2.prototype.Add = function (v) {
+   this.x += v.x;
+   this.y += v.y;
+}
+b2Vec2.prototype.Subtract = function (v) {
+   this.x -= v.x;
+   this.y -= v.y;
+}
+b2Vec2.prototype.Multiply = function (a) {
+   if (a === undefined) a = 0;
+   this.x *= a;
+   this.y *= a;
+}
+b2Vec2.prototype.MulM = function (A) {
+   var tX = this.x;
+   this.x = A.col1.x * tX + A.col2.x * this.y;
+   this.y = A.col1.y * tX + A.col2.y * this.y;
+}
+b2Vec2.prototype.MulTM = function (A) {
+   var tX = b2Math.Dot(this, A.col1);
+   this.y = b2Math.Dot(this, A.col2);
+   this.x = tX;
+}
+b2Vec2.prototype.CrossVF = function (s) {
+   if (s === undefined) s = 0;
+   var tX = this.x;
+   this.x = s * this.y;
+   this.y = (-s * tX);
+}
+b2Vec2.prototype.CrossFV = function (s) {
+   if (s === undefined) s = 0;
+   var tX = this.x;
+   this.x = (-s * this.y);
+   this.y = s * tX;
+}
+b2Vec2.prototype.MinV = function (b) {
+   this.x = this.x < b.x ? this.x : b.x;
+   this.y = this.y < b.y ? this.y : b.y;
+}
+b2Vec2.prototype.MaxV = function (b) {
+   this.x = this.x > b.x ? this.x : b.x;
+   this.y = this.y > b.y ? this.y : b.y;
+}
+b2Vec2.prototype.Abs = function () {
+   if (this.x < 0) this.x = (-this.x);
+   if (this.y < 0) this.y = (-this.y);
+}
+b2Vec2.prototype.Length = function () {
+   return Math.sqrt(this.x * this.x + this.y * this.y);
+}
+b2Vec2.prototype.LengthSquared = function () {
+   return (this.x * this.x + this.y * this.y);
+};
+b2Vec2.prototype.Normalize = function () {
+   var length = Math.sqrt(this.x * this.x + this.y * this.y);
+   if (length < Number.MIN_VALUE) {
+      return 0.0;
+   }
+   var invLength = 1.0 / length;
+   this.x *= invLength;
+   this.y *= invLength;
+   return length;
+};
+b2Vec2.prototype.IsValid = function () {
+   return b2Math.IsValid(this.x) && b2Math.IsValid(this.y);
+};
+
+function b2Distance(output, cache, input) {
+  ++b2Distance.b2_gjkCalls;
+  var proxyA = input.proxyA;
+  var proxyB = input.proxyB;
+  var transformA = input.transformA;
+  var transformB = input.transformB;
+  var simplex = b2Distance.s_simplex;
+  simplex.ReadCache(cache, proxyA, transformA, proxyB, transformB);
+  var vertices = simplex.m_vertices;
+  var k_maxIters = 20;
+  var saveA = b2Distance.s_saveA;
+  var saveB = b2Distance.s_saveB;
+  var saveCount = 0;
+  var closestPoint = simplex.GetClosestPoint();
+  var distanceSqr1 = closestPoint.LengthSquared();
+  var distanceSqr2 = distanceSqr1;
+  var i = 0;
+  var p;
+  var iter = 0;
+  while (iter < k_maxIters) {
+     saveCount = simplex.m_count;
+     for (i = 0;
+     i < saveCount; i++) {
+        saveA[i] = vertices[i].indexA;
+        saveB[i] = vertices[i].indexB;
+     }
+     switch (simplex.m_count) {
+     case 1:
+        break;
+     case 2:
+        simplex.Solve2();
+        break;
+     case 3:
+        simplex.Solve3();
+        break;
+     default:
+        b2Settings.b2Assert(false);
+     }
+     if (simplex.m_count == 3) {
+        break;
+     }
+     p = simplex.GetClosestPoint();
+     distanceSqr2 = p.LengthSquared();
+     if (distanceSqr2 > distanceSqr1) {}
+     distanceSqr1 = distanceSqr2;
+     var d = simplex.GetSearchDirection();
+     if (d.LengthSquared() < Number.MIN_VALUE * Number.MIN_VALUE) {
+        break;
+     }
+     var vertex = vertices[simplex.m_count];
+     vertex.indexA = proxyA.GetSupport(b2Math.MulTMV(transformA.R, d.GetNegative()));
+     vertex.wA = b2Math.MulX(transformA, proxyA.GetVertex(vertex.indexA));
+     vertex.indexB = proxyB.GetSupport(b2Math.MulTMV(transformB.R, d));
+     vertex.wB = b2Math.MulX(transformB, proxyB.GetVertex(vertex.indexB));
+     vertex.w = b2Math.SubtractVV(vertex.wB, vertex.wA);
+     ++iter;
+     ++b2Distance.b2_gjkIters;
+     var duplicate = false;
+     for (i = 0;
+     i < saveCount; i++) {
+        if (vertex.indexA == saveA[i] && vertex.indexB == saveB[i]) {
+           duplicate = true;
+           break;
+        }
+     }
+     if (duplicate) {
+        break;
+     }++simplex.m_count;
+  }
+  b2Distance.b2_gjkMaxIters = b2Math.Max(b2Distance.b2_gjkMaxIters, iter);
+  simplex.GetWitnessPoints(output.pointA, output.pointB);
+  output.distance = b2Math.SubtractVV(output.pointA, output.pointB).Length();
+  output.iterations = iter;
+  simplex.WriteCache(cache);
+  if (input.useRadii) {
+     var rA = proxyA.m_radius;
+     var rB = proxyB.m_radius;
+     if (output.distance > rA + rB && output.distance > Number.MIN_VALUE) {
+        output.distance -= rA + rB;
+        var normal = b2Math.SubtractVV(output.pointB, output.pointA);
+        normal.Normalize();
+        output.pointA.x += rA * normal.x;
+        output.pointA.y += rA * normal.y;
+        output.pointB.x -= rB * normal.x;
+        output.pointB.y -= rB * normal.y;
+     }
+     else {
+        var x = .5 * (output.pointA.x + output.pointB.x);
+        var y = .5 * (output.pointA.y + output.pointB.y);
+        output.pointA.x = output.pointB.x = x;
+        output.pointA.y = output.pointB.y = y;
+        output.distance = 0.0;
+     }
+  }
+}
+Box2D.Collision.b2Distance = b2Distance;
+
+
 //pre-definitions
-(function () {
+;(function () {
    Box2D.Collision.IBroadPhase = 'Box2D.Collision.IBroadPhase';
 
    function b2AABB() {
@@ -114,11 +473,6 @@ if (typeof(Box2D.Dynamics.Joints) === "undefined") Box2D.Dynamics.Joints = {};
       b2ContactPoint.b2ContactPoint.apply(this, arguments);
    };
    Box2D.Collision.b2ContactPoint = b2ContactPoint;
-
-   function b2Distance() {
-      b2Distance.b2Distance.apply(this, arguments);
-   };
-   Box2D.Collision.b2Distance = b2Distance;
 
    function b2DistanceInput() {
       b2DistanceInput.b2DistanceInput.apply(this, arguments);
@@ -295,11 +649,6 @@ if (typeof(Box2D.Dynamics.Joints) === "undefined") Box2D.Dynamics.Joints = {};
    };
    Box2D.Common.Math.b2Mat33 = b2Mat33;
 
-   function b2Math() {
-      b2Math.b2Math.apply(this, arguments);
-   };
-   Box2D.Common.Math.b2Math = b2Math;
-
    function b2Sweep() {
       b2Sweep.b2Sweep.apply(this, arguments);
    };
@@ -310,12 +659,6 @@ if (typeof(Box2D.Dynamics.Joints) === "undefined") Box2D.Dynamics.Joints = {};
       if (this.constructor === b2Transform) this.b2Transform.apply(this, arguments);
    };
    Box2D.Common.Math.b2Transform = b2Transform;
-
-   function b2Vec2() {
-      b2Vec2.b2Vec2.apply(this, arguments);
-      if (this.constructor === b2Vec2) this.b2Vec2.apply(this, arguments);
-   };
-   Box2D.Common.Math.b2Vec2 = b2Vec2;
 
    function b2Vec3() {
       b2Vec3.b2Vec3.apply(this, arguments);
@@ -1311,102 +1654,6 @@ Box2D.postDefs = [];
       this.normal = new b2Vec2();
       this.id = new b2ContactID();
    };
-   b2Distance.b2Distance = function () {};
-   b2Distance.Distance = function (output, cache, input) {
-      ++b2Distance.b2_gjkCalls;
-      var proxyA = input.proxyA;
-      var proxyB = input.proxyB;
-      var transformA = input.transformA;
-      var transformB = input.transformB;
-      var simplex = b2Distance.s_simplex;
-      simplex.ReadCache(cache, proxyA, transformA, proxyB, transformB);
-      var vertices = simplex.m_vertices;
-      var k_maxIters = 20;
-      var saveA = b2Distance.s_saveA;
-      var saveB = b2Distance.s_saveB;
-      var saveCount = 0;
-      var closestPoint = simplex.GetClosestPoint();
-      var distanceSqr1 = closestPoint.LengthSquared();
-      var distanceSqr2 = distanceSqr1;
-      var i = 0;
-      var p;
-      var iter = 0;
-      while (iter < k_maxIters) {
-         saveCount = simplex.m_count;
-         for (i = 0;
-         i < saveCount; i++) {
-            saveA[i] = vertices[i].indexA;
-            saveB[i] = vertices[i].indexB;
-         }
-         switch (simplex.m_count) {
-         case 1:
-            break;
-         case 2:
-            simplex.Solve2();
-            break;
-         case 3:
-            simplex.Solve3();
-            break;
-         default:
-            b2Settings.b2Assert(false);
-         }
-         if (simplex.m_count == 3) {
-            break;
-         }
-         p = simplex.GetClosestPoint();
-         distanceSqr2 = p.LengthSquared();
-         if (distanceSqr2 > distanceSqr1) {}
-         distanceSqr1 = distanceSqr2;
-         var d = simplex.GetSearchDirection();
-         if (d.LengthSquared() < Number.MIN_VALUE * Number.MIN_VALUE) {
-            break;
-         }
-         var vertex = vertices[simplex.m_count];
-         vertex.indexA = proxyA.GetSupport(b2Math.MulTMV(transformA.R, d.GetNegative()));
-         vertex.wA = b2Math.MulX(transformA, proxyA.GetVertex(vertex.indexA));
-         vertex.indexB = proxyB.GetSupport(b2Math.MulTMV(transformB.R, d));
-         vertex.wB = b2Math.MulX(transformB, proxyB.GetVertex(vertex.indexB));
-         vertex.w = b2Math.SubtractVV(vertex.wB, vertex.wA);
-         ++iter;
-         ++b2Distance.b2_gjkIters;
-         var duplicate = false;
-         for (i = 0;
-         i < saveCount; i++) {
-            if (vertex.indexA == saveA[i] && vertex.indexB == saveB[i]) {
-               duplicate = true;
-               break;
-            }
-         }
-         if (duplicate) {
-            break;
-         }++simplex.m_count;
-      }
-      b2Distance.b2_gjkMaxIters = b2Math.Max(b2Distance.b2_gjkMaxIters, iter);
-      simplex.GetWitnessPoints(output.pointA, output.pointB);
-      output.distance = b2Math.SubtractVV(output.pointA, output.pointB).Length();
-      output.iterations = iter;
-      simplex.WriteCache(cache);
-      if (input.useRadii) {
-         var rA = proxyA.m_radius;
-         var rB = proxyB.m_radius;
-         if (output.distance > rA + rB && output.distance > Number.MIN_VALUE) {
-            output.distance -= rA + rB;
-            var normal = b2Math.SubtractVV(output.pointB, output.pointA);
-            normal.Normalize();
-            output.pointA.x += rA * normal.x;
-            output.pointA.y += rA * normal.y;
-            output.pointB.x -= rB * normal.x;
-            output.pointB.y -= rB * normal.y;
-         }
-         else {
-            var x = .5 * (output.pointA.x + output.pointB.x);
-            var y = .5 * (output.pointA.y + output.pointB.y);
-            output.pointA.x = output.pointB.x = x;
-            output.pointA.y = output.pointB.y = y;
-            output.distance = 0.0;
-         }
-      }
-   }
    Box2D.postDefs.push(function () {
       Box2D.Collision.b2Distance.s_simplex = new b2Simplex();
       Box2D.Collision.b2Distance.s_saveA = new Vector_a2j_Number(3);
@@ -2430,7 +2677,7 @@ Box2D.postDefs = [];
          b2TimeOfImpact.s_distanceInput.proxyB = proxyB;
          b2TimeOfImpact.s_distanceInput.transformA = b2TimeOfImpact.s_xfA;
          b2TimeOfImpact.s_distanceInput.transformB = b2TimeOfImpact.s_xfB;
-         b2Distance.Distance(b2TimeOfImpact.s_distanceOutput, b2TimeOfImpact.s_cache, b2TimeOfImpact.s_distanceInput);
+         b2Distance(b2TimeOfImpact.s_distanceOutput, b2TimeOfImpact.s_cache, b2TimeOfImpact.s_distanceInput);
          if (b2TimeOfImpact.s_distanceOutput.distance <= 0.0) {
             alpha = 1.0;
             break;
@@ -3589,7 +3836,7 @@ Box2D.postDefs = [];
       var simplexCache = new b2SimplexCache();
       simplexCache.count = 0;
       var output = new b2DistanceOutput();
-      b2Distance.Distance(output, simplexCache, input);
+      b2Distance(output, simplexCache, input);
       return output.distance < 10.0 * Number.MIN_VALUE;
    }
    b2Shape.prototype.b2Shape = function () {
@@ -3723,7 +3970,6 @@ Box2D.postDefs = [];
       b2Math = Box2D.Common.Math.b2Math,
       b2Sweep = Box2D.Common.Math.b2Sweep,
       b2Transform = Box2D.Common.Math.b2Transform,
-      b2Vec2 = Box2D.Common.Math.b2Vec2,
       b2Vec3 = Box2D.Common.Math.b2Vec3;
 
    b2Mat22.b2Mat22 = function () {
@@ -3924,153 +4170,7 @@ Box2D.postDefs = [];
       out.z = det * (a11 * (a22 * bZ - a32 * bY) + a21 * (a32 * bX - a12 * bZ) + a31 * (a12 * bY - a22 * bX));
       return out;
    }
-   b2Math.b2Math = function () {};
-   b2Math.IsValid = function (x) {
-      if (x === undefined) x = 0;
-      return isFinite(x);
-   }
-   b2Math.Dot = function (a, b) {
-      return a.x * b.x + a.y * b.y;
-   }
-   b2Math.CrossVV = function (a, b) {
-      return a.x * b.y - a.y * b.x;
-   }
-   b2Math.CrossVF = function (a, s) {
-      if (s === undefined) s = 0;
-      var v = new b2Vec2(s * a.y, (-s * a.x));
-      return v;
-   }
-   b2Math.CrossFV = function (s, a) {
-      if (s === undefined) s = 0;
-      var v = new b2Vec2((-s * a.y), s * a.x);
-      return v;
-   }
-   b2Math.MulMV = function (A, v) {
-      var u = new b2Vec2(A.col1.x * v.x + A.col2.x * v.y, A.col1.y * v.x + A.col2.y * v.y);
-      return u;
-   }
-   b2Math.MulTMV = function (A, v) {
-      var u = new b2Vec2(b2Math.Dot(v, A.col1), b2Math.Dot(v, A.col2));
-      return u;
-   }
-   b2Math.MulX = function (T, v) {
-      var a = b2Math.MulMV(T.R, v);
-      a.x += T.position.x;
-      a.y += T.position.y;
-      return a;
-   }
-   b2Math.MulXT = function (T, v) {
-      var a = b2Math.SubtractVV(v, T.position);
-      var tX = (a.x * T.R.col1.x + a.y * T.R.col1.y);
-      a.y = (a.x * T.R.col2.x + a.y * T.R.col2.y);
-      a.x = tX;
-      return a;
-   }
-   b2Math.AddVV = function (a, b) {
-      var v = new b2Vec2(a.x + b.x, a.y + b.y);
-      return v;
-   }
-   b2Math.SubtractVV = function (a, b) {
-      var v = new b2Vec2(a.x - b.x, a.y - b.y);
-      return v;
-   }
-   b2Math.Distance = function (a, b) {
-      var cX = a.x - b.x;
-      var cY = a.y - b.y;
-      return Math.sqrt(cX * cX + cY * cY);
-   }
-   b2Math.DistanceSquared = function (a, b) {
-      var cX = a.x - b.x;
-      var cY = a.y - b.y;
-      return (cX * cX + cY * cY);
-   }
-   b2Math.MulFV = function (s, a) {
-      if (s === undefined) s = 0;
-      var v = new b2Vec2(s * a.x, s * a.y);
-      return v;
-   }
-   b2Math.AddMM = function (A, B) {
-      var C = b2Mat22.FromVV(b2Math.AddVV(A.col1, B.col1), b2Math.AddVV(A.col2, B.col2));
-      return C;
-   }
-   b2Math.MulMM = function (A, B) {
-      var C = b2Mat22.FromVV(b2Math.MulMV(A, B.col1), b2Math.MulMV(A, B.col2));
-      return C;
-   }
-   b2Math.MulTMM = function (A, B) {
-      var c1 = new b2Vec2(b2Math.Dot(A.col1, B.col1), b2Math.Dot(A.col2, B.col1));
-      var c2 = new b2Vec2(b2Math.Dot(A.col1, B.col2), b2Math.Dot(A.col2, B.col2));
-      var C = b2Mat22.FromVV(c1, c2);
-      return C;
-   }
-   b2Math.Abs = function (a) {
-      if (a === undefined) a = 0;
-      return a > 0.0 ? a : (-a);
-   }
-   b2Math.AbsV = function (a) {
-      var b = new b2Vec2(b2Math.Abs(a.x), b2Math.Abs(a.y));
-      return b;
-   }
-   b2Math.AbsM = function (A) {
-      var B = b2Mat22.FromVV(b2Math.AbsV(A.col1), b2Math.AbsV(A.col2));
-      return B;
-   }
-   b2Math.Min = function (a, b) {
-      if (a === undefined) a = 0;
-      if (b === undefined) b = 0;
-      return a < b ? a : b;
-   }
-   b2Math.MinV = function (a, b) {
-      var c = new b2Vec2(b2Math.Min(a.x, b.x), b2Math.Min(a.y, b.y));
-      return c;
-   }
-   b2Math.Max = function (a, b) {
-      if (a === undefined) a = 0;
-      if (b === undefined) b = 0;
-      return a > b ? a : b;
-   }
-   b2Math.MaxV = function (a, b) {
-      var c = new b2Vec2(b2Math.Max(a.x, b.x), b2Math.Max(a.y, b.y));
-      return c;
-   }
-   b2Math.Clamp = function (a, low, high) {
-      if (a === undefined) a = 0;
-      if (low === undefined) low = 0;
-      if (high === undefined) high = 0;
-      return a < low ? low : a > high ? high : a;
-   }
-   b2Math.ClampV = function (a, low, high) {
-      return b2Math.MaxV(low, b2Math.MinV(a, high));
-   }
-   b2Math.Swap = function (a, b) {
-      var tmp = a[0];
-      a[0] = b[0];
-      b[0] = tmp;
-   }
-   b2Math.Random = function () {
-      return Math.random() * 2 - 1;
-   }
-   b2Math.RandomRange = function (lo, hi) {
-      if (lo === undefined) lo = 0;
-      if (hi === undefined) hi = 0;
-      var r = Math.random();
-      r = (hi - lo) * r + lo;
-      return r;
-   }
-   b2Math.NextPowerOfTwo = function (x) {
-      if (x === undefined) x = 0;
-      x |= (x >> 1) & 0x7FFFFFFF;
-      x |= (x >> 2) & 0x3FFFFFFF;
-      x |= (x >> 4) & 0x0FFFFFFF;
-      x |= (x >> 8) & 0x00FFFFFF;
-      x |= (x >> 16) & 0x0000FFFF;
-      return x + 1;
-   }
-   b2Math.IsPowerOfTwo = function (x) {
-      if (x === undefined) x = 0;
-      var result = x > 0 && (x & (x - 1)) == 0;
-      return result;
-   }
+
    Box2D.postDefs.push(function () {
       Box2D.Common.Math.b2Math.b2Vec2_zero = new b2Vec2(0.0, 0.0);
       Box2D.Common.Math.b2Math.b2Mat22_identity = b2Mat22.FromVV(new b2Vec2(1.0, 0.0), new b2Vec2(0.0, 1.0));
@@ -4146,108 +4246,7 @@ Box2D.postDefs = [];
    b2Transform.prototype.GetAngle = function () {
       return Math.atan2(this.R.col1.y, this.R.col1.x);
    }
-   b2Vec2.b2Vec2 = function () {};
-   b2Vec2.prototype.b2Vec2 = function (x_, y_) {
-      if (x_ === undefined) x_ = 0;
-      if (y_ === undefined) y_ = 0;
-      this.x = x_;
-      this.y = y_;
-   }
-   b2Vec2.prototype.SetZero = function () {
-      this.x = 0.0;
-      this.y = 0.0;
-   }
-   b2Vec2.prototype.Set = function (x_, y_) {
-      if (x_ === undefined) x_ = 0;
-      if (y_ === undefined) y_ = 0;
-      this.x = x_;
-      this.y = y_;
-   }
-   b2Vec2.prototype.SetV = function (v) {
-      this.x = v.x;
-      this.y = v.y;
-   }
-   b2Vec2.prototype.GetNegative = function () {
-      return new b2Vec2((-this.x), (-this.y));
-   }
-   b2Vec2.prototype.NegativeSelf = function () {
-      this.x = (-this.x);
-      this.y = (-this.y);
-   }
-   b2Vec2.Make = function (x_, y_) {
-      if (x_ === undefined) x_ = 0;
-      if (y_ === undefined) y_ = 0;
-      return new b2Vec2(x_, y_);
-   }
-   b2Vec2.prototype.Copy = function () {
-      return new b2Vec2(this.x, this.y);
-   }
-   b2Vec2.prototype.Add = function (v) {
-      this.x += v.x;
-      this.y += v.y;
-   }
-   b2Vec2.prototype.Subtract = function (v) {
-      this.x -= v.x;
-      this.y -= v.y;
-   }
-   b2Vec2.prototype.Multiply = function (a) {
-      if (a === undefined) a = 0;
-      this.x *= a;
-      this.y *= a;
-   }
-   b2Vec2.prototype.MulM = function (A) {
-      var tX = this.x;
-      this.x = A.col1.x * tX + A.col2.x * this.y;
-      this.y = A.col1.y * tX + A.col2.y * this.y;
-   }
-   b2Vec2.prototype.MulTM = function (A) {
-      var tX = b2Math.Dot(this, A.col1);
-      this.y = b2Math.Dot(this, A.col2);
-      this.x = tX;
-   }
-   b2Vec2.prototype.CrossVF = function (s) {
-      if (s === undefined) s = 0;
-      var tX = this.x;
-      this.x = s * this.y;
-      this.y = (-s * tX);
-   }
-   b2Vec2.prototype.CrossFV = function (s) {
-      if (s === undefined) s = 0;
-      var tX = this.x;
-      this.x = (-s * this.y);
-      this.y = s * tX;
-   }
-   b2Vec2.prototype.MinV = function (b) {
-      this.x = this.x < b.x ? this.x : b.x;
-      this.y = this.y < b.y ? this.y : b.y;
-   }
-   b2Vec2.prototype.MaxV = function (b) {
-      this.x = this.x > b.x ? this.x : b.x;
-      this.y = this.y > b.y ? this.y : b.y;
-   }
-   b2Vec2.prototype.Abs = function () {
-      if (this.x < 0) this.x = (-this.x);
-      if (this.y < 0) this.y = (-this.y);
-   }
-   b2Vec2.prototype.Length = function () {
-      return Math.sqrt(this.x * this.x + this.y * this.y);
-   }
-   b2Vec2.prototype.LengthSquared = function () {
-      return (this.x * this.x + this.y * this.y);
-   }
-   b2Vec2.prototype.Normalize = function () {
-      var length = Math.sqrt(this.x * this.x + this.y * this.y);
-      if (length < Number.MIN_VALUE) {
-         return 0.0;
-      }
-      var invLength = 1.0 / length;
-      this.x *= invLength;
-      this.y *= invLength;
-      return length;
-   }
-   b2Vec2.prototype.IsValid = function () {
-      return b2Math.IsValid(this.x) && b2Math.IsValid(this.y);
-   }
+
    b2Vec3.b2Vec3 = function () {};
    b2Vec3.prototype.b2Vec3 = function (x, y, z) {
       if (x === undefined) x = 0;
@@ -5468,20 +5467,9 @@ Box2D.postDefs = [];
       this.m_listener = listener;
       this.m_contactSolver = contactSolver;
 
-      var bodies = this.m_bodies;
-      while(bodyCapacity--) {
-        bodies[i] = null;
-      }
-
-      var contacts = this.m_contacts;
-      while(contactCapacity--) {
-        contacts[i] = null;
-      }
-
-      var joints = this.m_joints;
-      while(jointCapacity--) {
-        joints[i] = null;
-      }
+      this.m_bodies.length = 0;
+      this.m_contacts.length = 0;
+      this.m_joints.length = 0;
    }
    b2Island.prototype.Clear = function () {
       this.m_bodyCount = 0;
@@ -5493,15 +5481,19 @@ Box2D.postDefs = [];
       var j = 0;
       var b;
       var joint;
-      for (i = 0;
-      i < this.m_bodyCount; ++i) {
-         b = this.m_bodies[i];
-         if (b.GetType() != b2Body.b2_dynamicBody) continue;
-         b.m_linearVelocity.x += step.dt * (gravity.x + b.m_invMass * b.m_force.x);
-         b.m_linearVelocity.y += step.dt * (gravity.y + b.m_invMass * b.m_force.y);
-         b.m_angularVelocity += step.dt * b.m_invI * b.m_torque;
-         b.m_linearVelocity.Multiply(b2Math.Clamp(1.0 - step.dt * b.m_linearDamping, 0.0, 1.0));
-         b.m_angularVelocity *= b2Math.Clamp(1.0 - step.dt * b.m_angularDamping, 0.0, 1.0);
+      var gx = gravity.x, gy = gravity.y;
+
+      var bodies = this.m_bodies, bodyIndex = bodies.length;
+      while(bodyIndex--) {
+        b = bodies[bodyIndex];
+        if (b.m_type != b2Body.b2_dynamicBody) {
+          continue;
+        }
+        b.m_linearVelocity.x += step.dt * (gx + b.m_invMass * b.m_force.x);
+        b.m_linearVelocity.y += step.dt * (gy + b.m_invMass * b.m_force.y);
+        b.m_angularVelocity += step.dt * b.m_invI * b.m_torque;
+        b.m_linearVelocity.Multiply(b2Math.Clamp(1.0 - step.dt * b.m_linearDamping, 0.0, 1.0));
+        b.m_angularVelocity *= b2Math.Clamp(1.0 - step.dt * b.m_angularDamping, 0.0, 1.0);
       }
       this.m_contactSolver.Initialize(step, this.m_contacts, this.m_contactCount, this.m_allocator);
       var contactSolver = this.m_contactSolver;
@@ -5529,7 +5521,7 @@ Box2D.postDefs = [];
       for (i = 0;
       i < this.m_bodyCount; ++i) {
          b = this.m_bodies[i];
-         if (b.GetType() == b2Body.b2_staticBody) continue;
+         if (b.m_type == b2Body.b2_staticBody) continue;
          var translationX = step.dt * b.m_linearVelocity.x;
          var translationY = step.dt * b.m_linearVelocity.y;
          if ((translationX * translationX + translationY * translationY) > b2Settings.b2_maxTranslationSquared) {
