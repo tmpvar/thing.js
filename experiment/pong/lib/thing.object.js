@@ -1,3 +1,7 @@
+if (typeof require !== 'undefined') {
+  var Thing = require('../../../lib/thing');
+}
+
 Thing.wrap = function(value) {
   if (value && value.wrapped) {
     return value;
@@ -10,6 +14,7 @@ Thing.wrap = function(value) {
 
 Thing.createReference = function(context, key, value) {
   var ret = Thing.wrap(value);
+  ret.meta('owner', context);
   return ret;
 }
 
@@ -18,12 +23,12 @@ Thing.trait('object', function(proto) {
     this._store = {};
   });
 
-  proto.set = function set(k, v) {
+  proto.set = function set(k, v, options) {
     if (this._store[k] && typeof this._store[k].set === 'function') {
       if (v.set && v.current) {
-        this._store[k].set(v.current);
+        this._store[k].set(v.current, options);
       } else{
-        this._store[k].set(v);
+        this._store[k].set(v, options);
       }
     } else {
       this._store[k] = Thing.createReference(this, k, v);
@@ -47,8 +52,12 @@ Thing.trait('object', function(proto) {
     var ret = {};
     for (var a in this._store) {
       if (this._store.hasOwnProperty(a)) {
-        ret[a] = this.get(a);
-        // TODO: deep copy
+        var val = this._store[a];
+        if (val && val.toJSON()) {
+          ret[a] === val;
+        } else {
+          ret[a] = val;
+        }
       }
     }
     return ret;
@@ -86,14 +95,16 @@ Thing.trait('object.value', function(proto) {
       }, 16);
     } else {
       for (var i=0, l=this._observers.length; i<l; i++) {
-        this._observers[i](value);
+        this._observers[i](value, this);
       }
     }
   };
 
-  proto.set = function(value) {
+  proto.set = function(value, options) {
     this.current = value;
-    this.notify(value);
+    if (!options || !options.silent) {
+      this.notify(value);
+    }
   };
 
   proto.resolve = function(obj, slotName, returnObject) {
@@ -107,7 +118,11 @@ Thing.trait('object.value', function(proto) {
 
   proto.get = function() {
     return this.current;
-  }
+  };
+
+  proto.toJSON = function() {
+    return this.current;
+  };
 });
 
 Thing.Value = Thing.class(['object.value']);

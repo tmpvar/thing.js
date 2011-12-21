@@ -1,13 +1,18 @@
 <html>
 <head>
   <title>Thing Pong experiment!</title>
-  <script type="text/javascript" src="client/ready.min.js"></script>
-  <script type="text/javascript" src="../../lib/thing.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="client/jquery.js"></script>
+  <script type="text/javascript" src="client/index.js"></script>
+  <script type="text/javascript" src="lib/thing.js"></script>
   <script type="text/javascript" src="lib/box2d.js"></script>
   <script type="text/javascript" src="lib/thing.object.js"></script>
   <script type="text/javascript" src="lib/thing.game.js"></script>
+  <script type="text/javascript" src="lib/thing.physical.js"></script>
   <script type="text/javascript" src="lib/index.js"></script>
-  <script type="text/javascript" src="lib/stats.js"></script>
+  <script type="text/javascript" src="lib/pong.js"></script>
+  <script type="text/javascript" src="client/stats.js"></script>
+  <script src="http://platform.twitter.com/anywhere.js?id=0sfPHvIfOBSzT8Czyj0Q&v=1" type="text/javascript"></script>
   <style type="text/css">
 
     @font-face {
@@ -16,10 +21,11 @@
     }
 
     body {
-      background: #404040;
+      background: #505050 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAYAAAC56t6BAAAAIUlEQVQIHWOMi4v7z8zMzMDEyMjI8OfPHwamX79+MYAAAGu+CA1lJV4pAAAAAElFTkSuQmCC');
       padding:0;
       margin:10px auto 0 auto;
       width: 420px;
+      font-family: verdana, arial;
     }
     #scene {
       clear:both;
@@ -94,9 +100,152 @@
         color: #909090;
         font-family: verdana, arial;
       }
+
+      .state {
+        display: none;
+      }
+
+      .state.menu {
+        background: #f0f0f0;
+        padding: 1px 10px 10px 10px;
+        border:1px solid #;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        -webkit-box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+        -moz-box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+        box-shadow: 3px 3px 10px 1px rgba(10, 10, 10, 1);
+      }
+
+      .state input {
+        border:1px solid #a0a0a0;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        width: 100%;
+        font-size: 24px;
+        line-height: 24px;
+      }
+
+      .state .submit input {
+        width: 20%;
+        margin-left: 40%;
+        line-height: 30px;
+        -webkit-box-shadow: 1px 1px 5px 1px rgba(10, 10, 10, 1);
+        -moz-box-shadow: 1px 1px 5px 1px rgba(10, 10, 10, 1);
+        box-shadow: 1px 1px 5px 1px rgba(10, 10, 10, 1);
+      }
+
+      .state .submit input:hover {
+        -webkit-box-shadow: 1px 1px 5px 1px #FFBE1D;
+        -moz-box-shadow: 1px 1px 5px 1px #FFBE1D;
+        box-shadow: 1px 1px 5px 1px #FFBE1D;
+      }
+
+      .lobby .currentUser {
+        border: 1px solid #111;
+        background: #000;
+        color: white;
+        width: 15%;
+        padding: 5px;
+        border-radius: 0 0 0 5px;
+        -moz-border-radius: 0 0 0 5px;
+        -webkit-border-radius: 0 0 0 5px;
+
+        position: absolute;
+        right: 0px;
+        top: 0px;
+      }
+
+      .lobby .currentUser .handle {
+        display: block;
+      }
+      .lobby .currentUser .avatar {
+        padding:1px;
+        border:1px solid #606060;
+      }
+
+      .lobby .currentUser .wins {
+        color: green;
+        font-weight: bolder;
+      }
+      .lobby .currentUser .losses {
+        color: red;
+        font-weight: bolder;
+      }
+
+      .lobby ul, .lobby li {
+        margin: 0;
+        list-style: none;
+        padding: 0px;
+      }
+
+      .lobby .chat {
+        border: 1px solid #a0a0a0;
+        background: fefefe;
+        padding:5px;
+        margin-bottom:20px;
+        height: 70%;
+        overflow: auto;
+      }
+
+      .lobby .chat li {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 10px 0 10px 10px;
+      }
+
+      .lobby .chat li.join {
+        background-color: #ECFFEF;
+      }
+
+      .template {
+        display: none;
+      }
+
   </style>
 </head>
 <body>
+  <div class="state registration menu">
+    <h1>Registration</h1>
+    <p>So everyone knows who you are!</p>
+    <span id="login"></span>
+  </div>
+
+  <div class="state lobby menu">
+    <h1>lobby</h1>
+    <div class="currentUser">
+
+      <img src="" class="avatar"/>
+      <span class="wins">0</span> - <span class="losses">0</span>
+      <span class="handle"></span>
+    </div>
+    <div class="connecting">
+      Connecting you to the lobby...
+    </div>
+
+    <div class="connected">
+      <ul class="chat">
+        <li class="template">
+          <span>
+            <img class="avatar" src="" />
+
+            <span class="message">some message</span><br/>
+            <a class="challenge" href="#">challenge!</a>
+          </span>
+        </li>
+      </ul>
+      <input type="text" class="chatInput" />
+
+
+      <ul class="users">
+        <li class="template">
+          <a href="" class="handle"></a>
+          <img class="avatar" src="" />
+        </li>
+
+      </ul>
+    </div>
+  </div>
   <div class="state ingame">
     <div id="scoreboard">
       <h1>Thing pong!</h1>
@@ -109,151 +258,7 @@
       </div>
     </div>
     <canvas id="scene"></canvas>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAYAAAC56t6BAAAAIUlEQVQIHWOMi4v7z8zMzMDEyMjI8OfPHwamX79+MYAAAGu+CA1lJV4pAAAAAElFTkSuQmCC" id="backgroundImage" style="display:none" />
+    <img src="" id="backgroundImage" style="display:none" />
   </div>
-
-  <script type="text/javascript">
-    domready(function() {
-
-      var stats = new Stats();
-
-      // Align top-left
-      stats.domElement.style.position = 'absolute';
-      stats.domElement.style.left = '0px';
-      stats.domElement.style.top = '0px';
-
-      document.body.appendChild( stats.domElement );
-
-      var canvas = document.getElementById('scene');
-      var width = 400;
-      var height = 600;
-      var puckImpulse = 0.019;
-      var ctx = window.ctx = canvas.getContext('2d');
-
-      var scene = window.scene = Thing.create(['game.scene', 'pong.physics.world'], {
-        gravity : { y : 0, x : 0}
-      });
-
-      var renderer = Thing.create(['game.renderer.canvas']);
-
-      scene.add(playerPaddle);
-
-      playerPaddle.get('body').GetBody().SetFixedRotation(true);
-      playerPaddle.get('body').GetBody().SetBullet(true);
-      playerPaddle.get('body').GetBody().SetLinearDamping(25.0);
-
-      scene.add(aiPaddle);
-      aiPaddle.get('body').GetBody().SetFixedRotation(true);
-      aiPaddle.get('body').GetBody().SetBullet(true);
-      aiPaddle.get('body').GetBody().SetLinearDamping(25.0);
-
-      scene.add(puck);
-      scene.add(topw);
-      scene.add(leftw);
-      scene.add(rightw);
-      scene.add(bottomw);
-
-
-      // TODO: target should be source
-      var scoreboard = Thing.create('object', {
-        human : new DOMValue({
-          target : human.ref('score'),
-          el : document.getElementById('human-score')
-        }),
-        ai : new DOMValue({
-          target : ai.ref('score'),
-          el :document.getElementById('ai-score')
-        })
-      });
-
-      scene.when(puck).collidesWith(bottomw, topw).then(function(wall) {
-        var score = wall.get('player').get('score') + 1;
-        wall.get('player').set('score', score);
-
-        var body = puck.get('body').GetBody();
-        setTimeout(function() {
-          body.ResetMassData();
-          body.SetLinearVelocity({ x : 0, y : 0 });
-          body.SetAngularVelocity(0);
-          body.SetPosition({ x : (width/2)/RATIO, y : (height/2)/RATIO });
-          var impulse = puckImpulse;
-          if (wall.get('player').get('name') === 'human') {
-            impulse = -impulse;
-          }
-          body.ApplyImpulse({x:0, y: impulse }, {
-            x : puck.get('x')/RATIO,
-            y : puck.get('y')/RATIO
-          });
-        }, 10);
-
-        if (score > 14) {
-          // TODO: end the game
-        }
-      });
-
-
-      // TODO: refactor this into a trait
-      puck.get('body').GetBody().ApplyImpulse({x:0, y: puckImpulse}, {
-        x : puck.get('x')/RATIO,
-        y : puck.get('y')/RATIO
-      });
-      puck.get('body').GetBody().SetBullet(true);
-
-      var keys = {
-        39 : false,
-        37 : false
-      };
-
-      canvas.width = 0;
-      canvas.width = width;
-      canvas.height = height;
-      var render = function render() {
-        ctx.fillStyle = 'rgba(0,0,0,.3)';
-        ctx.fillRect(0, 0, width, height);
-
-        // TODO: this should not be on the render loop
-        scene.render(ctx);
-        stats.update();
-        requestAnimFrame(render);
-      };
-
-      setInterval(function() {
-        scene.tick();
-      }, 1000/60);
-
-      setInterval(function() {
-        var impulse = 10;
-        if (keys[39]) { // right arrow
-            playerPaddle.get('body').GetBody().ApplyImpulse({
-              x : impulse,
-              y : 0
-            }, {
-              x : playerPaddle.get('x')/RATIO,
-              y : playerPaddle.get('y')/RATIO
-            });
-        }
-
-        if (keys[37]) { // left arrow
-          playerPaddle.get('body').GetBody().ApplyImpulse({
-            x : -impulse,
-            y : 0
-          }, {
-            x : playerPaddle.get('x')/RATIO,
-            y : playerPaddle.get('y')/RATIO
-          });
-        }
-      }, 1000/30);
-
-      render();
-
-      document.addEventListener('keydown', function(e) {
-
-        keys[e.keyCode] = true;
-      }, true);
-      document.addEventListener('keyup', function(e) {
-        keys[e.keyCode] = false;
-      }, true);
-    });
-  </script>
 </body>
 </html>
