@@ -7,16 +7,14 @@ app.use(strata.static, __dirname + '/../../../');
 var io = require('socket.io').listen(strata.run(app));
 var pong = require('../lib/pong');
 var Thing = require('../../../lib/thing');
-
-var games = [], lastTick = 0, rate = 1000;
+io.disable('log');
+var games = [], lastTick = 0, rate = 60;
 process.nextTick(function tickGames() {
   var now = Date.now(), current = games.length;
   if (now - lastTick > rate) {
-    console.log('here', current);
     while (current--) {
-      games[current].tick();
-      console.log(JSON.stringify(games[current].toJSON()));
-      games[current].socket.emit('tick', 'ticked');
+      games[current].step();
+      games[current].socket.emit('tick', games[current].pack());
     }
     lastTick = now;
   }
@@ -26,63 +24,50 @@ process.nextTick(function tickGames() {
 
 
 io.sockets.on('connection', function (socket) {
-
-  var player1 = new pong.Player(), player2 = new pong.Player();
-
-  player1.set('name', 'player1');
-  player2.set('name', 'player2');
-
-  player2.set('paddle', new pong.Paddle({
-    y : Thing.constant(6),
-    x : 190,
-    width : Thing.constant(80),
-    height: Thing.constant(10),
-    color : '#ff0000',
-    density : 100,
-    restitution: 0,
-    friction : .1
-  }));
-
-  player1.set('paddle', new pong.Paddle({
-    y: Thing.constant(594),
-    x : 190,
-    width : Thing.constant(80),
-    height: Thing.constant(10),
-    color : 'blue',
-    density : 100,
-    restitution: 0,
-    friction : .1
-  }));
-
-  var game = new pong.Scene({
-     player1 : player1,
-     player2 : player2
-  });
-  game.socket = socket;
-  games.push(game);
-
   socket.on('message', function () {
-    console.log(arguments);
+    //console.log(arguments);
   });
 
   socket.on('disconnect', function () {
-
-    users = users.filter(function() {
-
-    });
   });
 });
 
+var createGame = function(player1, player2) {
+  var game = pong.setupScene(player1, player2);
+
+  game.set('room', '/game/' + game.meta('id').value);
+  game.socket = io.of(game.get('room'));
+
+  var pendingJoins = 2;
+  game.socket.on('connection', function() {
+    pendingJoins--;
+    if (pendingJoins < 1) {
+
+      games.push(game);
+    }
+  });
+
+  return game;
+}
 
 var users = [];
 var messages = [];
 var msgid = 0;
 var userid = 0;
-var lobby = io.of('/lobby')
+var lobby = io.of('/lobby');
+
+var findPlayerByHandle = function(handle) {
+  var current = users.length;
+  while(current--) {
+    if (users[current].handle === handle) {
+      return users[current];
+    }
+  }
+};
+
 lobby.on('connection', function(socket) {
   lobby.emit('history', {
-    messages : messages,
-    users    : users
+    messages : messages
   });
 
   socket.on('msg', function(data) {
@@ -90,14 +75,26 @@ lobby.on('connection', function(socket) {
     data.id = 'msg-' + msgid++;
     messages.unshift(data);
     lobby.emit('msg', data);
-    console.log(messages)
+
+    if (data.type === "accept") {
+      // find both users and send them a game request as soon as the game is ready
+      var player1 = findPlayerByHandle(data.handle);
+      var player2 = findPlayerByHandle(data.handle2);
+      var game = createGame(player1, player2);
+
+      // prompt the users to join a game
+      player1.socket.emit('game.created', game.get('room'));
+      player2.socket.emit('game.created', game.get('room'));
+    }
   });
 
   socket.on('joined', function(data) {
     data.id = 'user-' + userid++;
     data.type = 'join';
-    users.push(data);
-    messages.unshift(data);
     lobby.emit('joined', data);
+    messages.unshift(JSON.parse(JSON.stringify(data)));
+    data.socket = socket;
+    users.push(data);
+
   });
 });

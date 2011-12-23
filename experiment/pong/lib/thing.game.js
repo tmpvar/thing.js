@@ -18,7 +18,7 @@
               window.oRequestAnimationFrame      ||
               window.msRequestAnimationFrame     ||
               function(/* function */ callback, /* DOMElement */ element){
-                window.setTimeout(callback, 1000 / 60);
+                window.setTimeout(callback, 1000 / 30);
               };
     })();
   }
@@ -30,10 +30,27 @@
       this.set('parent', Thing.wrap(options.parent || null));
       // TODO: create an array value
       this.set('children', Thing.createCollection(options.children || []));
+
+      this.set('tick', 0);
+      this.ref('tick').meta('no transport', true);
     });
 
     proto.add = function SceneAdd(node) {
+      if (!node) {
+        throw new Error('attempted to add an invalid child!');
+      }
       this.ref('children').add(node);
+    };
+
+    proto.tick = function(time) {
+      if (this && this.set) {
+        this.set('tick', time);
+        this.ref('children').each(function(child) {
+          child.tick(time);
+        });
+      } else {
+        console.log('rawr');
+      }
     };
   });
 
@@ -110,7 +127,9 @@
     };
 
     proto.when = function(chainSource) {
-      var ret = new (this.get('whenActions'))();;
+      var ret = new (this.get('whenActions'))({
+        name : 'when object'
+      });
       ret.set('source', chainSource);
       return ret;
     };

@@ -42,17 +42,17 @@
   ], function(proto) {
     proto.init(function(options) {
       this.set('body', null);
+      this.set('name', 'puck');
       var that = this;
       this.ref('body').on(function() {
         that.get('body').GetBody().SetFixedRotation(true);
         that.get('body').GetBody().SetBullet(true);
-        that.get('body').GetBody().SetLinearDamping(25.0);
+        that.get('body').GetBody().SetLinearDamping(0.0);
       });
-
     });
 
     proto.impulse = function(x, y) {
-      this.get('body').GetBody().ApplyImpulse({ x : x, y : y}, {
+      this.get('body').GetBody().ApplyImpulse({ x : x, y : y }, {
         x : this.get('x')/Thing.RATIO,
         y : this.get('y')/Thing.RATIO
       });
@@ -69,7 +69,11 @@
       this.set('world', new b2World(gravity, true));
       if (this.get('children')) {
         this.ref('children').on(function(node) {
-          that.addBody(node);
+          if (node) {
+            that.addBody(node);
+          } else {
+            throw Error('invalid scene node!')
+          }
         });
       }
 
@@ -148,12 +152,14 @@
       });
     });
 
-    proto.tick = function() {
+    proto.step = function() {
       this.get('world').Step(1/60, 10, 10);
+      this.tick(Date.now());
     };
 
     proto.addBody = function(node) {
       var fixDef = new b2FixtureDef;
+
       fixDef.density = node.get('density');
       fixDef.friction = node.get('friction') || 0;
       fixDef.restitution = node.get('restitution') || 0;
@@ -172,26 +178,30 @@
 
   Thing.trait('pong.scene', ['game.scene', 'pong.physics.world'], function(proto) {
     proto.init(function(options) {
+      this.set('name', 'scene');
       this.add(options.player1.get('paddle'));
       this.add(options.player2.get('paddle'));
 
       var puck = new Puck({
+        name : 'puck',
         x : 200,
         y : 250,
         width : 20,
         height : 20,
-        reset : function() {
-          // TODO: reset the puck to 0 and randomly choose a direction
-        },
         color : '#28D371',
         friction : 1,
         restitution : 1.001,
-        density : 1
+        density : 1,
+        impulse : 0.01
       });
 
+      if (typeof window !== 'undefined') {
+        window.puck = puck;
+      }
 
       var wallcolor = "#94654A"
       var topw = new Wall({
+        name : 'topw',
         x : Thing.constant(200),
         y : Thing.constant(-5),
         width : Thing.constant(400),
@@ -203,6 +213,7 @@
       });
 
       var leftw = new Wall({
+        name : 'leftw',
         x : Thing.constant(-5),
         y : Thing.constant(299),
         width : Thing.constant(10),
@@ -214,6 +225,7 @@
       });
 
       var rightw = new Wall({
+        name : 'rightw',
         x : Thing.constant(405),
         y : Thing.constant(300),
         width : Thing.constant(10),
@@ -225,6 +237,7 @@
       });
 
       var bottomw = new Wall({
+        name : 'bottomw',
         x : Thing.constant(200),
         y : Thing.constant(605),
         width : Thing.constant(400),
@@ -241,64 +254,123 @@
       this.add(rightw);
       this.add(bottomw);
 
+      puck.impulse(0, puck.get('impulse'));
+
       bottomw.set('player', options.player2);
       topw.set('player', options.player1);
 
       // Scorekeeping
       // TODO: link to scoreboard object
       this.when(puck).collidesWith(bottomw, topw).then(function(wall) {
-        var score = wall.get('player').get('score') + 1;
-        wall.get('player').set('score', score);
+return;
+        //var score = wall.get('player').get('score') + 1;
+        //wall.get('player').set('score', score);
 
         var body = puck.get('body').GetBody();
+        var width = puck.get('width'),
+            height = puck.get('height');
+
         setTimeout(function() {
           body.ResetMassData();
           body.SetLinearVelocity({ x : 0, y : 0 });
           body.SetAngularVelocity(0);
           body.SetPosition({ x : (width/2)/Thing.RATIO, y : (height/2)/Thing.RATIO });
-          var impulse = puckImpulse;
+          var impulse = puck.get('impulse');
           // Refactor this for use with 2 players!
-          if (wall.get('player').get('name') === 'human') {
-            impulse = -impulse;
+          //if (wall.get('player').get('name') === 'human') {
+          if (puck.get('x') > 300) {
+            puck.impulse(0, -puck.get('impulse'));
+          } else {
+            puck.impulse(0, puck.get('impulse'));
           }
-          body.ApplyImpulse({x:0, y: impulse }, {
-            x : puck.get('x')/Thing.RATIO,
-            y : puck.get('y')/Thing.RATIO
-          });
         }, 10);
 
-        if (score > 14) {
+       // if (score > 14) {
           // TODO: end the game
-        }
+       // }
       });
+    });
+  });
+
+  Thing.trait('pong.paddle', function(proto) {
+    proto.init(function(options) {
+      this.set('name', 'paddle');
+      this.set('x'      , 190);
+      this.set('width'  , Thing.constant(80));
+      this.set('height' , Thing.constant(10));
+      this.set('color'  , options.color || '#ff0000');
+      this.set('density', Thing.constant(100));
+      this.set('restitution', 0.1);
+      this.set('friction' , .1);
     });
   });
 
   var Paddle = Thing.class([
     'game.solid.rectangular',
-    'physics.shape.rectangular'
+    'physics.shape.rectangular',
+    'pong.paddle'
   ]);
 
-  var Scene = Thing.class(['pong.scene']);
+  var Scene = Thing.class(['pong.scene', 'object.networked']);
   var Wall = Thing.class([
     'pong.physics.object',
     'game.solid.rectangular',
     'physics.shape.rectangular',
     'object.physics.static'
   ]);
-  var Player = Thing.class(['game.actor']);
+
+  Thing.trait('pong.player', function(proto) {
+    proto.init(function(options) {
+      this.set('paddle', new Paddle({
+        name : options.name + "'s paddle",
+        y : Thing.constant(options.y || 0),
+        x : options.x || 0
+      }));
+    });
+  })
+  var Player = Thing.class(['game.actor', 'pong.player']);
   var Puck = Thing.class(['pong.puck', 'physics.shape.circular']);
+
+  var setupScene = function(player1, player2) {
+    var
+    player1 = new Player({
+      name : player1.handle,
+      y    : 594,
+      x    : 190
+    }),
+
+    player2 = new Player({
+      name : player2.handle,
+      y    : 6,
+      x    : 190
+    });
+
+    var game = new Scene({
+      name    : 'scene',
+      player1 : player1,
+      player2 : player2
+    });
+
+    game.set('room', '/game/' + game.meta('id').value);
+    return game;
+  };
 
   if (typeof module !== 'undefined') {
     module.exports = {
       Scene  : Scene,
       Paddle : Paddle,
       Wall   : Wall,
-      Player : Player
+      Player : Player,
+      setupScene : setupScene,
     };
 
   // Expose to the window directly
   } else {
-    window.Scene = Scene;
+    window.setupScene = setupScene;
+    window.Player = Player;
+    window.Scene  = Scene;
+    window.Paddle = Paddle;
+    window.Wall   = Wall;
+    window.Player = Player;
   }
 })();

@@ -21,6 +21,7 @@ Thing.createReference = function(context, key, value) {
 Thing.trait('object', function(proto) {
   proto.init(function(options) {
     this._store = this._store || {};
+
     // TODO: safety
     for (var key in options) {
       this.set(key, options[key]);
