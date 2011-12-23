@@ -20,14 +20,26 @@ Thing.createReference = function(context, key, value) {
 
 Thing.trait('object', function(proto) {
   proto.init(function(options) {
-    this._store = {};
+    this._store = this._store || {};
+    // TODO: safety
+    for (var key in options) {
+      this.set(key, options[key]);
+    }
   });
 
   proto.set = function set(k, v, options) {
+    if (!this._store) {
+      this._store = {};
+    }
+
+    if (!v && isNaN(v)) {
+      throw new Error('attempted to set ' + k + ' to NaN!;' + v);
+    }
+
     if (this._store[k] && typeof this._store[k].set === 'function') {
-      if (v.set && v.current) {
+      if (v && v.set && v.current) {
         this._store[k].set(v.current, options);
-      } else{
+      } else {
         this._store[k].set(v, options);
       }
     } else {
@@ -54,7 +66,7 @@ Thing.trait('object', function(proto) {
       if (this._store.hasOwnProperty(a)) {
         var val = this._store[a];
         if (val && val.toJSON()) {
-          ret[a] === val;
+          ret[a] = val.toJSON();
         } else {
           ret[a] = val;
         }
@@ -121,7 +133,7 @@ Thing.trait('object.value', function(proto) {
   };
 
   proto.toJSON = function() {
-    return this.current;
+    return (this.current && this.current.toJSON) ? this.current.toJSON() : this.current;
   };
 });
 
