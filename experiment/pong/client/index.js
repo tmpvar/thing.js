@@ -16,6 +16,12 @@ $(function() {
       }
     });
 
+    function joinRoom(room) {
+      var name = window.location.protocol + "//" + window.location.host + room;
+      console.log('joining', name);
+      return io.connect(name);
+    }
+
 
     function createLobby(currentUser) {
       var ctx = $('.state.lobby');
@@ -26,7 +32,7 @@ $(function() {
       ctx.find('.currentUser .avatar').attr('src', currentUser.profileImageUrl);
       ctx.find('.currentUser .handle').text(currentUser.screenName);
 
-      var lobby = io.connect(window.location.protocol + "//" + window.location.host + '/lobby');
+      var lobby = joinRoom('/lobby');
       lobby.on('connect', function(conn) {
         lobby.emit('joined', {
           avatar : currentUser.profileImageUrl,
@@ -154,6 +160,26 @@ $(function() {
               addMessage(message);
             }
           }
+        });
+
+        lobby.on('game.created', function(room) {
+          var game = joinRoom(room);
+
+
+          game.on('connect', function(conn) {
+            $('.state').hide();
+            $('.state.ingame').show();
+            createGame()
+
+          });
+
+          game.on('disconnect', function() {
+            // kill off the game
+            $('.state').hide();
+            $('.state.lobby').show();
+          });
+
+
         });
       });
     }

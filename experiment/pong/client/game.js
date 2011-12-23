@@ -6,15 +6,15 @@
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.left = '0px';
     stats.domElement.style.top = '0px';
-    document.body.appendChild( stats.domElement );
+    $('.state.ingame').append(stats.domElement);
 
     var canvas = document.getElementById('scene');
     var width = 400;
     var height = 600;
-    var puckImpulse = 0.019;
     var ctx = window.ctx = canvas.getContext('2d');
     var renderer = Thing.create(['game.renderer.canvas']);
-    var scene = new Scene();
+    // TODO: collect the users
+    var scene = setupScene({ handle : 'player1' }, { handle : 'player2' });
     // TODO: target should be source
     /*var scoreboard = Thing.create('object', {
       human : new DOMValue({
@@ -40,14 +40,13 @@
       ctx.fillStyle = 'rgba(0,0,0,.3)';
       ctx.fillRect(0, 0, width, height);
 
-      // TODO: this should not be on the render loop
       scene.render(ctx);
       stats.update();
       requestAnimFrame(render);
     };
 
     setInterval(function() {
-      scene.tick();
+      scene.step();
     }, 1000/60);
 
     setInterval(function() {
@@ -84,4 +83,4 @@
     }, true);
   };
 
-});
+})();

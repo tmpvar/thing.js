@@ -33,11 +33,11 @@
       this.set('tick', 0);
 
       var that = this;
-      this._store.tick.on(function() {
+      this.ref('tick').on(function() {
         var pos = that.get('body').GetBody().GetPosition();
-        that.set('x', pos.x*RATIO, { silent : true });
-        that.set('y', pos.y*RATIO, { silent : true });
-        that.set('rotation', that.get('body').GetBody().GetAngle(), { silent : true });
+        that.set('x', pos.x*Thing.RATIO);//, { silent : true });
+        that.set('y', pos.y*Thing.RATIO);//, { silent : true });
+        that.set('rotation', that.get('body').GetBody().GetAngle());
       });
     });
   });
@@ -49,10 +49,10 @@
       this.set('tick', 0);
 
       var that = this;
-      this._store.tick.on(function() {
+      this.ref('tick').on(function() {
         var pos = that.get('body').GetBody().GetPosition();
-        that.set('x', pos.x*RATIO, { silent : true });
-        that.set('y', pos.y*RATIO, { silent : true });
+        that.set('x', pos.x*Thing.RATIO, { silent : true });
+        that.set('y', pos.y*Thing.RATIO, { silent : true });
         that.set('rotation', that.get('body').GetBody().GetAngle(), { silent : true });
       });
     });
