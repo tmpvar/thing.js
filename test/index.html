@@ -1,18 +1,22 @@
 <html>
-  <head>
-    <title>Example Test Suite</title>
-    <link rel="stylesheet" href="../node_modules/nodeunit/dist/browser/nodeunit.css" type="text/css" />
-    <script src="../node_modules/nodeunit/dist/browser/nodeunit.min.js"></script>
-    <script src="../lib/thing.js"></script>
-    <script src="index.js"></script>
-
-  </head>
-  <body>
-    <h1 id="nodeunit-header">Thing.js Test Suite</h1>
-    <script>
-      nodeunit.run({
-        'base': tests,
-      });
-    </script>
-  </body>
+<head>
+  <title>Thing.js tests</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="../node_modules/mocha/mocha.css">
+  <script type="text/javascript" src="../node_modules/mocha/mocha.js"></script>
+  <script type="text/javascript" src="../lib/thing.min.js"></script>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript">
+    mocha.setup('bdd');
+  </script>
+  <script type="text/javascript" src="index.js"></script>
+  <script type="text/javascript">
+    onload = function() {
+      mocha.run().globals(['Thing']);
+    }
+  </script>
+</head>
+<body>
+  <div id="mocha"></div>
+</body>
 </html>

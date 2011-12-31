@@ -1,3 +1,150 @@
+var Thing;
+if (typeof window === 'undefined') {
+  Thing = require('../lib/thing');
+} else {
+  thing = window.Thing;
+}
+
+function ok(v, msg) {
+  if (!v) {
+    throw new Error(msg || 'expected "' + v + '" to be truthy');
+  }
+}
+
+describe('Thing.js', function() {
+  describe('utilities', function() {
+    describe('toString', function() {
+      it('should stringify objects', function() {
+        ok(Thing.toString({}) === '[object Object]');
+      });
+    });
+
+    describe('isArray', function() {
+      it('should return true if the incoming is an array', function() {
+        ok(Thing.isArray([]));
+        ok(Thing.isArray(new Array()));
+      });
+      it('should return false if the incoming is not an array', function() {
+        ok(!Thing.isArray({}));
+        ok(!Thing.isArray("hello"));
+        ok(!Thing.isArray(1));
+      });
+    });
+  });
+
+  describe('TraitManager', function() {
+    var TraitManager = Thing.TraitManager;
+
+    describe('constructor', function() {
+      it('should store a reference to a prototype in _proto', function() {
+        var p  = {}, tm = new TraitManager(p);
+        ok(p === tm._proto);
+      });
+
+      it('should populate _traits', function() {
+        var tm = new TraitManager({}, ['some', 'traits']);
+
+        ok(tm._traits.some);
+        ok(tm._traits.traits);
+        ok(!tm._traits.object);
+      });
+    });
+
+    describe('#has', function() {
+      it('should return true if it contains the specified trait', function() {
+        var tm = new TraitManager({}, ['bird']);
+        ok(tm.has('bird'));
+      });
+
+      it('should return true if it contains the specified trait', function() {
+        var tm = new TraitManager({}, ['bird']);
+        ok(!tm.has('undefined'));
+      });
+    });
+
+    describe('#add', function() {
+      it('should evaluate a trait against the current prototoype', function() {
+        Thing.trait('exists', function(proto) {
+          proto.executed = true;
+        });
+
+        var p = {}, tm = new TraitManager(p);
+
+        tm.add('exists');
+        ok(p.executed);
+      });
+
+      it('should error if the trait does not exist', function() {
+        var p = {}, tm = new TraitManager(p), e;
+
+        try {
+          tm.add('non-existant');
+        } catch (error) {
+          e = error
+        }
+
+        ok(e);
+        ok(e.message.indexOf('does not exist') > -1);
+      });
+    });
+
+    describe('#remove', function() {
+      Thing.trait('removal-test', function(proto) {
+        proto.one = 1;
+        proto.two = 2;
+      });
+
+      it('should remove members created by the #add function', function() {
+        var p = { untouched : true }, tm = new TraitManager(p);
+        tm.add('removal-test');
+
+        ok(p.one === 1);
+        ok(p.two === 2);
+
+        tm.remove('removal-test');
+
+        ok(!p.one)
+        ok(!p.two);
+        ok(p.untouched);
+      });
+
+      it('should remove (unmodified) members from created objects', function() {
+        var A = function() {};
+
+        var tm = new TraitManager(A.prototype);
+
+        tm.add('removal-test');
+
+        var a = new A();
+        ok(a.one === 1);
+        ok(a.two === 2);
+
+        tm.remove('removal-test');
+        ok(!a.one)
+        ok(!a.two);
+      })
+    });
+  });
+
+  describe('natives', function() {
+    describe('Object', function() {
+
+    });
+
+    describe('Value', function() {
+
+    });
+
+    describe('Collection', function() {
+
+    });
+  });
+
+  describe('events', function() {
+
+  });
+});
+
 var tests = {
 
   'trait creation' : function(t) {
@@ -160,10 +307,3 @@ var tests = {
     t.done();
   }
 };
-
-if (typeof module !== 'undefined') {
-  var Thing = require('../lib/thing');
-  module.exports = tests;
-} else {
-  window.tests = tests;
-}
