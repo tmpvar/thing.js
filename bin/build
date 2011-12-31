@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docco lib/thing.js
+uglifyjs -o lib/thing.min.js lib/thing.js

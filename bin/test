@@ -1,0 +1,51 @@
+#!/bin/bash
+
+sha=0
+previous_sha=0
+paused=0
+
+update_sha()
+{
+    sha=`ls -lR . | sha1sum`
+}
+
+build () {
+    paused=1
+    bin/build
+    mocha test/index.js
+    update_sha
+    previous_sha=$sha
+    sleep 1
+    paused=0
+    echo
+    echo "--> Monitor: Monitoring filesystem... (Press enter to force a build/update)"
+}
+
+changed () {
+    echo "--> Monitor: Files changed, Building..."
+    build
+    previous_sha=$sha
+}
+
+compare () {
+    update_sha
+    if [[ $sha != $previous_sha ]] ; then changed; fi
+}
+
+run () {
+    while true; do
+        if [ $paused == 0 ]
+        then
+            compare
+
+            read -s -t 1 && (
+                echo "--> Monitor: Forced Update..."
+                build
+            )
+        fi
+    done
+}
+
+echo "--> Monitor: Init..."
+echo "--> Monitor: Monitoring filesystem... (Press enter to force a build/update)"
+run

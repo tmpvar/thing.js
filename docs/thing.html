@@ -1,0 +1,372 @@
+<!DOCTYPE html>  <html> <head>   <title>thing.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               thing.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h1>Thing.js</h1>
+
+<p>flexible metaobjects with trait driven behavior
+MIT licensed, copyright Elijah Insua <a href="&#x6D;&#97;&#x69;&#108;&#116;&#x6F;:&#x74;&#109;&#x70;&#x76;&#97;&#114;&#64;&#x67;m&#x61;&#x69;&#108;&#x2E;&#99;&#x6F;&#x6D;">&#x74;&#109;&#x70;&#x76;&#97;&#114;&#64;&#x67;m&#x61;&#x69;&#108;&#x2E;&#99;&#x6F;&#x6D;</a> 2011</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">;(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Internal namespace
+this gets exposed as Thing externally</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="kd">var</span> <span class="nx">out</span> <span class="o">=</span> <span class="p">{},</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Each thing has an index, this keeps track of the
+next thing id</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">thingId</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+
+  <span class="nx">toString</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="nx">toString</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toString</span><span class="p">;</span>
+  <span class="nx">isArray</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">||</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">a</span><span class="p">.</span><span class="nx">push</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="s1">&#39;length&#39;</span> <span class="k">in</span> <span class="nx">a</span><span class="p">)</span> <span class="p">};</span>
+
+  <span class="kd">function</span> <span class="nx">TraitManager</span><span class="p">(</span><span class="nx">proto</span><span class="p">,</span> <span class="nx">traits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">traits</span> <span class="o">=</span> <span class="nx">traits</span> <span class="o">||</span> <span class="p">[];</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_proto</span> <span class="o">=</span> <span class="nx">proto</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_traits</span> <span class="o">=</span> <span class="p">{};</span>
+
+    <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="nx">traits</span><span class="p">.</span><span class="nx">length</span> <span class="o">||</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">(</span><span class="nx">current</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">_traits</span><span class="p">[</span><span class="nx">traits</span><span class="p">[</span><span class="nx">current</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">TraitManager</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Determine if this object has a trait</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">has</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="o">!!</span><span class="k">this</span><span class="p">.</span><span class="nx">_traits</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+    <span class="p">},</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Add a trait to the prototype.  <code>name</code> can be an array or a string.</p>
+
+<p><strong>note</strong>: if a trait is not found an exception is thrown, potentially
+in the middle of creation.  Best practice is to stop and fix this before
+continuing to avoid undefined behavior.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">add</span> <span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">registry</span> <span class="o">=</span> <span class="nx">Thing</span><span class="p">.</span><span class="nx">traits</span><span class="p">;</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span> <span class="p">{</span>
+        <span class="kd">var</span>
+        <span class="nx">current</span>   <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span>
+        <span class="nx">proto</span>     <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_proto</span><span class="p">,</span>
+        <span class="nx">trait</span><span class="p">,</span> <span class="nx">currentName</span><span class="p">;</span>
+
+        <span class="k">while</span><span class="p">(</span><span class="nx">current</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">currentName</span> <span class="o">=</span> <span class="nx">name</span><span class="p">[</span><span class="nx">current</span><span class="p">];</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">registry</span><span class="p">[</span><span class="nx">currentName</span><span class="p">])</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_traits</span><span class="p">[</span><span class="nx">currentName</span><span class="p">]</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="nx">registry</span><span class="p">[</span><span class="nx">name</span><span class="p">](</span><span class="k">this</span><span class="p">.</span><span class="nx">_proto</span><span class="p">);</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;trait &quot;&#39;</span> <span class="o">+</span> <span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39;&quot; does not exist&#39;</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">registry</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">_traits</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+          <span class="nx">registry</span><span class="p">[</span><span class="nx">name</span><span class="p">](</span><span class="k">this</span><span class="p">.</span><span class="nx">_proto</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;trait &quot;&#39;</span> <span class="o">+</span> <span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39;&quot; does not exist&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Remove a trait from the prototype.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">remove</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>unregister the incoming trait so
+new creations and #has will work</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">_traits</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>setup a temporary prototype to calculate which
+members need to be removed</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="kd">var</span> <span class="nx">tmpproto</span> <span class="o">=</span> <span class="p">{};</span>
+      <span class="nx">Thing</span><span class="p">.</span><span class="nx">traits</span><span class="p">[</span><span class="nx">name</span><span class="p">](</span><span class="nx">tmpproto</span><span class="p">);</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>remove the memebers</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">tmpproto</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">tmpproto</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">i</span><span class="p">))</span> <span class="p">{</span>
+          <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">_proto</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">TraitManager</span> <span class="o">=</span> <span class="nx">TraitManager</span><span class="p">;</span>
+
+  <span class="kd">function</span> <span class="nx">Thing</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">meta</span> <span class="o">=</span> <span class="p">{};</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">meta</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">key</span> <span class="o">&amp;&amp;</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">frozen</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">value</span> <span class="o">:</span> <span class="nx">value</span> <span class="p">};</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">options</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">freeze</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">frozen</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">value</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">meta</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">value</span> <span class="o">||</span> <span class="kc">null</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="p">{</span>
+      <span class="nx">value</span> <span class="o">:</span> <span class="nx">thingId</span><span class="o">++</span><span class="p">,</span>
+      <span class="nx">freeze</span> <span class="o">:</span> <span class="kc">true</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="nx">Thing</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{};</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">traits</span> <span class="o">=</span> <span class="nx">Thing</span><span class="p">.</span><span class="nx">traits</span> <span class="o">=</span> <span class="p">{};</span>
+  <span class="nx">out</span><span class="p">.</span><span class="kr">class</span> <span class="o">=</span> <span class="nx">Thing</span><span class="p">.</span><span class="kr">class</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">traits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">traits</span> <span class="o">=</span> <span class="nx">traits</span> <span class="o">||</span> <span class="p">[];</span>
+    <span class="kd">var</span> <span class="nx">fn</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">Class</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">Thing</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+      <span class="kd">var</span> <span class="nx">steps</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">init</span><span class="p">.</span><span class="nx">_steps</span><span class="p">,</span> <span class="nx">current</span> <span class="o">=</span> <span class="nx">steps</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+      <span class="nx">options</span> <span class="o">=</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">options</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="p">{}</span> <span class="o">:</span> <span class="nx">options</span><span class="p">;</span>
+      <span class="k">while</span><span class="p">(</span><span class="nx">current</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">steps</span><span class="p">[</span><span class="nx">current</span><span class="p">].</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">fn</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Thing</span><span class="p">();</span>
+    <span class="nx">fn</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">init</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">init</span><span class="p">.</span><span class="nx">_steps</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span>
+    <span class="p">};</span>
+    <span class="nx">fn</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">init</span><span class="p">.</span><span class="nx">_steps</span> <span class="o">=</span> <span class="p">[];</span>
+
+    <span class="nx">fn</span><span class="p">.</span><span class="nx">traits</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">TraitManager</span><span class="p">(</span><span class="nx">fn</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span> <span class="nx">traits</span><span class="p">);</span>
+    <span class="nx">fn</span><span class="p">.</span><span class="nx">traits</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">traits</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">fn</span><span class="p">;</span>
+  <span class="p">};</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">trait</span> <span class="o">=</span> <span class="nx">Thing</span><span class="p">.</span><span class="nx">trait</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">required</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">action</span> <span class="o">=</span> <span class="nx">required</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">traits</span> <span class="o">=</span> <span class="nx">Thing</span><span class="p">.</span><span class="nx">traits</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">traits</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">||</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">required</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">required</span> <span class="o">=</span> <span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">required</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="nx">traits</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">traitWrapper</span><span class="p">(</span><span class="nx">proto</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="nx">required</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">trait</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="nx">current</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">traitName</span> <span class="o">=</span> <span class="nx">required</span><span class="p">[</span><span class="nx">current</span><span class="p">];</span>
+          <span class="nx">trait</span> <span class="o">=</span> <span class="nx">traits</span><span class="p">[</span><span class="nx">traitName</span><span class="p">];</span>
+
+          <span class="k">if</span> <span class="p">(</span><span class="nx">traitName</span> <span class="o">===</span> <span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">action</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">action</span><span class="p">(</span><span class="nx">proto</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+              <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">proto</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">action</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>
+              <span class="p">}</span>
+            <span class="p">}</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">trait</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">trait</span><span class="p">(</span><span class="nx">proto</span><span class="p">);</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">trait</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">trait</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">proto</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">trait</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>
+            <span class="p">}</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Trait (&#39;</span> <span class="o">+</span> <span class="nx">traitName</span> <span class="o">+</span> <span class="s1">&#39;) not found&#39;</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">};</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">create</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">traits</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>TODO: consider caching the classes</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">Class</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="kr">class</span><span class="p">(</span><span class="nx">traits</span><span class="p">);</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nx">Class</span><span class="p">(</span><span class="nx">options</span><span class="p">);</span>
+  <span class="p">};</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">wrap</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">&amp;&amp;</span> <span class="nx">value</span><span class="p">.</span><span class="nx">wrapped</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">value</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="k">new</span> <span class="p">(</span><span class="nx">out</span><span class="p">.</span><span class="nx">Value</span><span class="p">)(</span><span class="nx">value</span><span class="p">);</span>
+      <span class="nx">ret</span><span class="p">.</span><span class="nx">wrapped</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">createReference</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="nx">wrap</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+    <span class="nx">ret</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;owner&#39;</span><span class="p">,</span> <span class="nx">context</span><span class="p">);</span>
+    <span class="nx">ret</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="nx">key</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">trait</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">proto</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">_store</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_store</span> <span class="o">||</span> <span class="p">{};</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>TODO: safety</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">set</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">set</span><span class="p">(</span><span class="nx">k</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_store</span> <span class="o">=</span> <span class="p">{};</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">v</span> <span class="o">&amp;&amp;</span> <span class="nb">isNaN</span><span class="p">(</span><span class="nx">v</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;attempted to set &#39;</span> <span class="o">+</span> <span class="nx">k</span> <span class="o">+</span> <span class="s1">&#39; to NaN!;&#39;</span> <span class="o">+</span> <span class="nx">v</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">].</span><span class="nx">set</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">v</span> <span class="o">&amp;&amp;</span> <span class="nx">v</span><span class="p">.</span><span class="nx">set</span> <span class="o">&amp;&amp;</span> <span class="nx">v</span><span class="p">.</span><span class="nx">current</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">].</span><span class="nx">set</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">current</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">].</span><span class="nx">set</span><span class="p">(</span><span class="nx">v</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="nx">createReference</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">v</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">get</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">get</span><span class="p">(</span><span class="nx">k</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">])</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">val</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">val</span><span class="p">.</span><span class="nx">get</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">val</span><span class="p">.</span><span class="nx">get</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">val</span><span class="p">.</span><span class="nx">get</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">val</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">toJSON</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{};</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">a</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">a</span><span class="p">))</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">val</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">a</span><span class="p">];</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">val</span> <span class="o">&amp;&amp;</span> <span class="nx">val</span><span class="p">.</span><span class="nx">toJSON</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nx">ret</span><span class="p">[</span><span class="nx">a</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span><span class="p">.</span><span class="nx">toJSON</span><span class="p">();</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">ret</span><span class="p">[</span><span class="nx">a</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
+    <span class="p">},</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">reference</span> <span class="o">=</span> <span class="nx">proto</span><span class="p">.</span><span class="nx">ref</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">k</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">out</span><span class="p">.</span><span class="nx">createReference</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">k</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">_store</span><span class="p">[</span><span class="nx">k</span><span class="p">]);</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nb">Object</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="kr">class</span><span class="p">([</span><span class="s1">&#39;object&#39;</span><span class="p">]);</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">trait</span><span class="p">(</span><span class="s1">&#39;object.value&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">proto</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">_observers</span> <span class="o">=</span> <span class="p">[];</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="nx">options</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="nx">options</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">update</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">update</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">update</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">update</span><span class="p">();</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">on</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">_observers</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">notify</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>There is potential here where observers are setup
+after default values if that is the case, then
+wait until the next tick before notifying them.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_observers</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+          <span class="nx">that</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+        <span class="p">},</span> <span class="mi">16</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nx">l</span><span class="o">=</span><span class="k">this</span><span class="p">.</span><span class="nx">_observers</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span><span class="nx">l</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">_observers</span><span class="p">[</span><span class="nx">i</span><span class="p">](</span><span class="nx">value</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">set</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">options</span> <span class="o">||</span> <span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">silent</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">resolve</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="nx">slotName</span><span class="p">,</span> <span class="nx">returnObject</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">slot</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">slotName</span><span class="p">);</span>
+      <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+      <span class="nx">slot</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">that</span><span class="p">.</span><span class="nx">update</span><span class="p">();</span>
+      <span class="p">});</span>
+      <span class="k">return</span> <span class="p">(</span><span class="nx">returnObject</span><span class="p">)</span> <span class="o">?</span> <span class="nx">slot</span> <span class="o">:</span> <span class="nx">slot</span><span class="p">.</span><span class="nx">current</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">get</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">toJSON</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">current</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">toJSON</span><span class="p">)</span> <span class="o">?</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">toJSON</span><span class="p">()</span> <span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">;</span>
+    <span class="p">};</span>
+  <span class="p">});</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">Value</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="kr">class</span><span class="p">([</span><span class="s1">&#39;object.value&#39;</span><span class="p">]);</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">out</span><span class="p">.</span><span class="nx">trait</span><span class="p">(</span><span class="s1">&#39;object.collection&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;object.value&#39;</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">proto</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;contains&#39;</span><span class="p">,</span> <span class="p">{});</span>
+    <span class="p">});</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">add</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">ObjectAdd</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">obj</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">obj</span> <span class="o">&amp;&amp;</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">meta</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;contains&#39;</span><span class="p">)[</span><span class="nx">obj</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">obj</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">wrapped</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">length</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">length</span> <span class="o">||</span> <span class="mi">0</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">remove</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+      <span class="k">while</span><span class="p">(</span><span class="nx">current</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">[</span><span class="nx">current</span><span class="p">]</span> <span class="o">===</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;contains&#39;</span><span class="p">)[</span><span class="nx">obj</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)];</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">obj</span><span class="p">);</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">filter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+      <span class="k">while</span><span class="p">(</span><span class="nx">current</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">[</span><span class="nx">current</span><span class="p">]))</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">each</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">l</span><span class="o">=</span><span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+      <span class="k">for</span> <span class="p">(</span><span class="nx">i</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span><span class="nx">l</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="o">===</span> <span class="kc">false</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">proto</span><span class="p">.</span><span class="nx">intersect</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">collection</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;contains&#39;</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">meta</span><span class="p">(</span><span class="s1">&#39;contains&#39;</span><span class="p">));</span>
+    <span class="p">};</span>
+  <span class="p">});</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">Collection</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="kr">class</span><span class="p">([</span><span class="s1">&#39;object.collection&#39;</span><span class="p">]);</span>
+
+  <span class="nx">out</span><span class="p">.</span><span class="nx">constant</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="nx">wrap</span><span class="p">(</span><span class="nx">val</span><span class="p">);</span>
+    <span class="nx">ret</span><span class="p">.</span><span class="nx">set</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{};</span>
+    <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
+  <span class="p">};</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">module</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">out</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nb">window</span><span class="p">.</span><span class="nx">Thing</span> <span class="o">=</span> <span class="nx">out</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">})();</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
