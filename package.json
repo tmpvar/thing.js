@@ -12,9 +12,12 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "nodeunit" : "*"
+    "mocha" : "0.8.x",
+    "browserify" : "*",
+    "uglify-js" : "1.2.2",
+    "docco"     : "*"
   },
   "scripts" : {
-    "test" : "test/runner"
+    "test" : "mocha test/index.js"
   }
 }
